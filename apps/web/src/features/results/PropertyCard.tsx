@@ -48,7 +48,7 @@ export const PropertyCard = forwardRef<HTMLElement, Props>(function PropertyCard
     <article
       ref={ref}
       id={`property-card-${item.id}`}
-      className={`${styles.card} ${selected ? styles.selected : ''} ${highlighted ? styles.highlighted : ''}`}
+      className={`hover-card ${styles.card} ${selected ? styles.selected : ''} ${highlighted ? styles.highlighted : ''}`}
       onMouseEnter={() => onHover?.(item.id)}
       onMouseLeave={() => onHover?.(null)}
       onFocus={() => onHover?.(item.id)}
@@ -63,7 +63,8 @@ export const PropertyCard = forwardRef<HTMLElement, Props>(function PropertyCard
               src={item.coverImage.url}
               alt={item.coverImage.alt}
               loading="lazy"
-              className={styles.image}
+              decoding="async"
+              className={`hover-zoom ${styles.image}`}
             />
           ) : (
             <div className={styles.imagePlaceholder} aria-hidden="true" />

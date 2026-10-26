@@ -4,28 +4,21 @@
   overflow: hidden;
   padding-block: var(--space-16) var(--space-20);
   margin-bottom: var(--space-12);
+  /* Base colour (also what contrast checkers read); the static backdrop draws over it. */
   background: var(--color-chrome);
   color: #fff;
 }
 
-/* Soft royal-blue light that drifts slowly behind the hero. */
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: -20%;
-  z-index: -1;
-  background:
-    radial-gradient(38% 45% at 88% 12%, rgb(143 169 255 / 0.16), transparent 70%),
-    radial-gradient(45% 55% at 8% 95%, rgb(65 105 225 / 0.26), transparent 70%);
-  animation: glow-drift 14s ease-in-out infinite alternate;
-}
-
 .heroInner {
+  /* Explicitly above the static backdrop. */
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: var(--space-5);
 }
 
 .eyebrow {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -42,7 +35,21 @@
   height: 6px;
   border-radius: 50%;
   background: var(--color-accent-on-dark);
+}
+
+/* Expanding ring around the dot: transform and opacity only, so it never repaints. */
+.eyebrow::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--color-accent-on-dark);
   animation: pulse-ring 2.4s ease-out infinite;
+  will-change: transform, opacity;
 }
 
 .title {
@@ -126,6 +133,13 @@
   flex-direction: column;
 }
 
+.destinationFrame {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+}
+
 .destination {
   display: flex;
   flex: 1;
@@ -136,16 +150,10 @@
   background: var(--color-surface);
   color: inherit;
   text-decoration: none;
-  transition:
-    box-shadow var(--duration-fast),
-    transform var(--duration-fast);
 }
 
 .destination:hover {
   color: inherit;
-  border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-3px);
 }
 
 .destinationImage {
@@ -153,11 +161,6 @@
   aspect-ratio: 3 / 2;
   object-fit: cover;
   background: var(--color-gray-100);
-  transition: transform 600ms var(--ease-out);
-}
-
-.destination:hover .destinationImage {
-  transform: scale(1.05);
 }
 
 .destinationBody {
@@ -236,19 +239,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-}
-
-.value {
-  transition:
-    border-color var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out);
-}
-
-.value:hover {
-  border-color: var(--color-royal-200);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
 }
 
 .value:hover .valueIcon {

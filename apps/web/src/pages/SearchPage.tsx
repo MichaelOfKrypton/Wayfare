@@ -216,7 +216,7 @@ export function SearchPage() {
               <>
                 <ol className={`${styles.list} stagger`} aria-label="Search results">
                   {data.items.map((item) => (
-                    <li key={item.id}>
+                    <li key={item.id} className="hover-lift">
                       <PropertyCard
                         ref={(el) => {
                           if (el) cardRefs.current.set(item.id, el);

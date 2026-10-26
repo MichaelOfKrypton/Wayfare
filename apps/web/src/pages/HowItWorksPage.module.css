@@ -8,13 +8,15 @@
   isolation: isolate;
   overflow: hidden;
   padding-block: var(--space-16);
-  background:
-    radial-gradient(45% 60% at 10% 100%, rgb(65 105 225 / 0.22), transparent 70%),
-    var(--color-chrome);
+  /* Base colour (also what contrast checkers read); the static backdrop draws over it. */
+  background: var(--color-chrome);
   color: #fff;
 }
 
 .heroInner {
+  /* Explicitly above the static backdrop. */
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: var(--space-4);
   max-width: 980px; /* same column as the body below */
@@ -128,14 +130,6 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  transition:
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
 .cardTitle {

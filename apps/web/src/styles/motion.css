@@ -1,13 +1,25 @@
 /*
- * Motion: short, purposeful animations. Every animation uses `backwards` fill, so no
- * transform lingers after it ends (a lingering transform would break sticky and fixed
- * children). Everything is switched off for people who prefer reduced motion.
+ * Motion. Rules that keep it smooth:
+ * - Animate only `transform` and `opacity`, which the GPU composites without
+ *   repainting. Shadows fade in on a pre-drawn pseudo-element instead of
+ *   animating `box-shadow`.
+ * - Elements that move often are promoted to their own layer up front
+ *   (`will-change`), so a hover never starts with a repaint.
+ * - Entrance animations use `backwards` fill, so no transform lingers (a
+ *   lingering transform breaks sticky and fixed children).
+ * - Everything is switched off for people who prefer reduced motion.
  */
+
+:root {
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-hover: 420ms;
+  --duration-zoom: 900ms;
+}
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate3d(0, 12px, 0);
   }
 }
 
@@ -65,63 +77,208 @@
 }
 
 @keyframes pulse-ring {
-  0% {
-    box-shadow: 0 0 0 0 rgb(143 169 255 / 0.55);
+  from {
+    opacity: 0.6;
+    transform: scale(1);
   }
-  70%,
-  100% {
-    box-shadow: 0 0 0 8px rgb(143 169 255 / 0);
+  to {
+    opacity: 0;
+    transform: scale(2.6);
   }
 }
 
-/* Each page fades up on navigation (the <main> element is keyed by path). */
+@keyframes compass-turn {
+  from {
+    transform: translate3d(0, -50%, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(0, -50%, 0) rotate(360deg);
+  }
+}
+
+/*
+ * Each page fades in on navigation (<main> is keyed by path). Opacity only:
+ * a transform here would make <main> the containing block for the fixed hero
+ * backdrop and make it jump when the animation ends.
+ */
 .page-enter {
-  animation: fade-up 380ms var(--ease-out) backwards;
+  animation: fade-in 320ms ease-out backwards;
 }
 
 /* Lists cascade in, item by item. */
 .stagger > * {
-  animation: fade-up 420ms var(--ease-out) backwards;
+  animation: fade-up 520ms var(--ease-smooth) backwards;
 }
 .stagger > :nth-child(2) {
-  animation-delay: 40ms;
+  animation-delay: 50ms;
 }
 .stagger > :nth-child(3) {
-  animation-delay: 80ms;
+  animation-delay: 100ms;
 }
 .stagger > :nth-child(4) {
-  animation-delay: 120ms;
+  animation-delay: 150ms;
 }
 .stagger > :nth-child(5) {
-  animation-delay: 160ms;
-}
-.stagger > :nth-child(6) {
   animation-delay: 200ms;
 }
+.stagger > :nth-child(6) {
+  animation-delay: 250ms;
+}
 .stagger > :nth-child(7) {
-  animation-delay: 240ms;
+  animation-delay: 300ms;
 }
 .stagger > :nth-child(8) {
-  animation-delay: 280ms;
+  animation-delay: 350ms;
 }
 .stagger > :nth-child(n + 9) {
-  animation-delay: 320ms;
+  animation-delay: 400ms;
 }
 
 /* The compass needle settles on load and swings when the logo is hovered. */
 .logo-needle {
   transform-box: view-box;
   transform-origin: 32px 32px;
-  animation: needle-settle 1100ms var(--ease-out) backwards;
+  animation: needle-settle 1100ms var(--ease-smooth) backwards;
 }
 a:hover .logo-needle,
 a:focus-visible .logo-needle {
-  animation: needle-swing 900ms var(--ease-out);
+  animation: needle-swing 900ms var(--ease-smooth);
 }
 
 /* Map price markers pop in. */
 .price-marker__pill {
-  animation: pop 320ms var(--ease-out) backwards;
+  animation: pop 320ms var(--ease-smooth) backwards;
+}
+
+/* ---------------------------------------------------------------------------
+ * Hover pattern for cards: lift, fade in a pre-drawn shadow, zoom the photo.
+ * Use with `.hover-card` on the card and `.hover-zoom` on its image.
+ * ------------------------------------------------------------------------- */
+.hover-card {
+  position: relative;
+  transform: translate3d(0, 0, 0);
+  transition: transform var(--duration-hover) var(--ease-smooth);
+  will-change: transform;
+}
+
+/* The hover shadow lives outside the card's clip, on the card's wrapper. */
+.hover-lift {
+  position: relative;
+  isolation: isolate;
+}
+
+.hover-lift::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transition:
+    opacity var(--duration-hover) var(--ease-smooth),
+    transform var(--duration-hover) var(--ease-smooth);
+  pointer-events: none;
+}
+
+.hover-lift:hover::after {
+  opacity: 1;
+  transform: translate3d(0, -3px, 0);
+}
+
+.hover-lift:hover .hover-card {
+  transform: translate3d(0, -3px, 0);
+}
+
+/* Cards without a clipped photo lift themselves. */
+.lift-self {
+  position: relative;
+  transform: translate3d(0, 0, 0);
+  transition: transform var(--duration-hover) var(--ease-smooth);
+  will-change: transform;
+}
+
+.lift-self::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity var(--duration-hover) var(--ease-smooth);
+  pointer-events: none;
+}
+
+.lift-self:hover {
+  transform: translate3d(0, -3px, 0);
+}
+
+.lift-self:hover::after {
+  opacity: 1;
+}
+
+/* Photos zoom slowly on their own layer, so the zoom never repaints the card. */
+.hover-zoom {
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: transform var(--duration-zoom) var(--ease-smooth);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.hover-lift:hover .hover-zoom {
+  transform: translate3d(0, 0, 0) scale(1.045);
+}
+
+/* ---------------------------------------------------------------------------
+ * Static hero backdrop (see components/HeroBackdrop.tsx). The fixed layer is
+ * clipped to the hero, so the hero and the page scroll over a still background.
+ * ------------------------------------------------------------------------- */
+.hero-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  clip-path: inset(0);
+  pointer-events: none;
+}
+
+.hero-backdrop__layer {
+  position: fixed;
+  inset: 0;
+  background: var(--color-chrome);
+  will-change: transform;
+}
+
+/* Soft blue light drifting slowly; composited, so it never repaints. */
+.hero-backdrop__layer::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(38% 45% at 88% 18%, rgb(143 169 255 / 0.16), transparent 70%),
+    radial-gradient(45% 55% at 8% 80%, rgb(65 105 225 / 0.26), transparent 70%);
+  animation: glow-drift 16s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.hero-backdrop__compass {
+  position: absolute;
+  top: 52%;
+  right: max(-140px, calc((100vw - 1200px) / 2 - 120px));
+  width: clamp(360px, 48vw, 680px);
+  height: auto;
+  color: rgb(143 169 255 / 0.09);
+  animation: compass-turn 240s linear infinite;
+  will-change: transform;
+}
+
+@media (max-width: 767px) {
+  .hero-backdrop__compass {
+    right: -45%;
+    width: 120vw;
+    color: rgb(143 169 255 / 0.07);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -133,39 +290,5 @@ a:focus-visible .logo-needle {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* ---------------------------------------------------------------------------
- * Compass watermark: a large, faint compass behind hero areas. It turns very
- * slowly; reduced-motion users get it still.
- * ------------------------------------------------------------------------- */
-@keyframes watermark-turn {
-  to {
-    transform: translateY(-50%) rotate(360deg);
-  }
-}
-
-.watermark {
-  position: absolute;
-  top: 50%;
-  z-index: -1;
-  pointer-events: none;
-  transform: translateY(-50%);
-  animation: watermark-turn 240s linear infinite;
-}
-
-.watermark--hero {
-  right: max(-140px, calc((100vw - 1200px) / 2 - 120px));
-  width: clamp(360px, 48vw, 680px);
-  height: auto;
-  color: rgb(143 169 255 / 0.08);
-}
-
-@media (max-width: 767px) {
-  .watermark--hero {
-    right: -45%;
-    width: 120vw;
-    color: rgb(143 169 255 / 0.06);
   }
 }

@@ -3,7 +3,7 @@ import { ArrowRight, BadgePercent, Clock3, Layers, LocateFixed } from 'lucide-re
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
-import { CompassWatermark } from '../components/Logo';
+import { HeroBackdrop } from '../components/HeroBackdrop';
 import { Skeleton } from '../components/States';
 import { SearchForm } from '../features/search/SearchForm';
 import { geolocationMessage, requestCurrentPosition } from '../lib/geolocation';
@@ -46,7 +46,7 @@ export function HomePage() {
   return (
     <>
       <section className={styles.hero} aria-labelledby="hero-title">
-        <CompassWatermark className="watermark watermark--hero" />
+        <HeroBackdrop />
         <div className={`container ${styles.heroInner}`}>
           <p className={styles.eyebrow}>South African stays, compared</p>
           <h1 id="hero-title" className={styles.title}>
@@ -105,24 +105,27 @@ export function HomePage() {
           )}
           {featured.data?.items.map((d) => (
             <li key={d.slug}>
-              <Link
-                className={styles.destination}
-                to={`/search?${searchQueryToParams({ ...stay, destination: d.slug }).toString()}`}
-              >
-                <img
-                  src={d.imageUrl ?? '/images/demo/coast-1.svg'}
-                  alt=""
-                  loading="lazy"
-                  className={styles.destinationImage}
-                />
-                <span className={styles.destinationBody}>
-                  <span className={styles.destinationName}>{d.name}</span>
-                  <span className={styles.destinationMeta}>
-                    {d.province} · {pluralise(d.propertyCount, 'stay')}
+              <div className={`hover-lift ${styles.destinationFrame}`}>
+                <Link
+                  className={`hover-card ${styles.destination}`}
+                  to={`/search?${searchQueryToParams({ ...stay, destination: d.slug }).toString()}`}
+                >
+                  <img
+                    src={d.imageUrl ?? '/images/demo/coast-1.svg'}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className={`hover-zoom ${styles.destinationImage}`}
+                  />
+                  <span className={styles.destinationBody}>
+                    <span className={styles.destinationName}>{d.name}</span>
+                    <span className={styles.destinationMeta}>
+                      {d.province} · {pluralise(d.propertyCount, 'stay')}
+                    </span>
+                    {d.summary && <span className={styles.destinationSummary}>{d.summary}</span>}
                   </span>
-                  {d.summary && <span className={styles.destinationSummary}>{d.summary}</span>}
-                </span>
-              </Link>
+                </Link>
+              </div>
               {d.imageCredit && (
                 <a
                   className={styles.destinationCredit}
@@ -144,7 +147,7 @@ export function HomePage() {
           Comparison you can check
         </h2>
         <div className={`${styles.valueGrid} stagger`}>
-          <article className={styles.value}>
+          <article className={`lift-self ${styles.value}`}>
             <span className={styles.valueIcon}>
               <BadgePercent size={20} aria-hidden="true" />
             </span>
@@ -155,7 +158,7 @@ export function HomePage() {
               costs.
             </p>
           </article>
-          <article className={styles.value}>
+          <article className={`lift-self ${styles.value}`}>
             <span className={styles.valueIcon}>
               <Layers size={20} aria-hidden="true" />
             </span>
@@ -166,7 +169,7 @@ export function HomePage() {
               recommended.
             </p>
           </article>
-          <article className={styles.value}>
+          <article className={`lift-self ${styles.value}`}>
             <span className={styles.valueIcon}>
               <Clock3 size={20} aria-hidden="true" />
             </span>

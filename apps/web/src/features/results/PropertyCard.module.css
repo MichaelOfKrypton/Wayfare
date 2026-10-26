@@ -6,23 +6,13 @@
   border-radius: var(--radius-lg);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
-  transition:
-    border-color var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out),
-    transform var(--duration-base) var(--ease-out);
   scroll-margin: var(--space-20);
   container-type: inline-size;
 }
 
-.card:hover,
 .card:focus-within,
 .highlighted {
   border-color: var(--color-royal-200);
-  box-shadow: var(--shadow-lg);
-}
-
-.card:hover {
-  transform: translateY(-2px);
 }
 
 .selected {
@@ -47,14 +37,6 @@
   position: relative;
   overflow: hidden;
   background: var(--color-gray-100);
-}
-
-.image {
-  transition: transform 600ms var(--ease-out);
-}
-
-.card:hover .image {
-  transform: scale(1.04);
 }
 
 .image,

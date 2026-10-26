@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { CompassWatermark } from '../components/Logo';
+import { HeroBackdrop } from '../components/HeroBackdrop';
 import { useDocumentTitle } from '../lib/hooks';
 import styles from './HowItWorksPage.module.css';
 
@@ -49,7 +49,7 @@ export function HowItWorksPage() {
   return (
     <article className={styles.page}>
       <header className={styles.hero}>
-        <CompassWatermark className="watermark watermark--hero" />
+        <HeroBackdrop />
         <div className={`container ${styles.heroInner}`}>
           <p className={styles.eyebrow}>Transparency</p>
           <h1>How Wayfare works</h1>
@@ -71,7 +71,7 @@ export function HowItWorksPage() {
         <section aria-labelledby="data-title" id="data" className={styles.section}>
           <SectionHead icon={<Database size={18} />} id="data-title" title="Real and simulated" />
           <div className={`${styles.split} stagger`}>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>
                 <BadgeCheck size={18} aria-hidden="true" /> Real, from OpenStreetMap
               </h3>
@@ -93,7 +93,7 @@ export function HowItWorksPage() {
                 (ODbL). Wayfare isn’t affiliated with any of these places.
               </p>
             </div>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>
                 <FlaskConical size={18} aria-hidden="true" /> Simulated for the demo
               </h3>
@@ -182,11 +182,11 @@ export function HowItWorksPage() {
             title="Cheapest vs recommended offers"
           />
           <div className={`${styles.split} stagger`}>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>Cheapest</h3>
               <p className={styles.small}>Simply the lowest total for your exact stay.</p>
             </div>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>Recommended</h3>
               <p className={styles.small}>
                 The cheapest offer with free cancellation, if it costs at most 10% more. Otherwise
@@ -204,7 +204,7 @@ export function HowItWorksPage() {
             title="Availability and maps"
           />
           <div className={`${styles.split} stagger`}>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>
                 <CalendarCheck size={18} aria-hidden="true" /> Availability
               </h3>
@@ -214,7 +214,7 @@ export function HowItWorksPage() {
                 so last-minute searches show realistic gaps.
               </p>
             </div>
-            <div className={styles.card}>
+            <div className={`lift-self ${styles.card}`}>
               <h3 className={styles.cardTitle}>
                 <MapIcon size={18} aria-hidden="true" /> Maps and location
               </h3>
