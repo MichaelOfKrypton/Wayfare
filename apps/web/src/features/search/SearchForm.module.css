@@ -86,7 +86,7 @@
 }
 
 .input:hover {
-  border-color: var(--color-navy-600);
+  border-color: var(--color-royal-600);
 }
 
 .input:focus-visible {
@@ -150,7 +150,7 @@
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   cursor: pointer;
-  color: var(--color-navy-700);
+  color: var(--color-royal-700);
 }
 
 .option > svg {
@@ -160,11 +160,11 @@
 
 .option:hover,
 .optionActive {
-  background: var(--color-navy-50);
+  background: var(--color-royal-50);
 }
 
 .optionActive {
-  box-shadow: inset 3px 0 0 var(--color-navy-700);
+  box-shadow: inset 3px 0 0 var(--color-royal-700);
 }
 
 .locationOption {

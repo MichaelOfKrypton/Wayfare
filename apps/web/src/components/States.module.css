@@ -17,8 +17,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--color-navy-50);
-  color: var(--color-navy-700);
+  background: var(--color-royal-50);
+  color: var(--color-royal-700);
 }
 
 .error .icon {
@@ -47,9 +47,9 @@
   display: block;
   background: linear-gradient(
     90deg,
-    var(--color-sand-100) 0%,
-    var(--color-sand-200) 50%,
-    var(--color-sand-100) 100%
+    var(--color-gray-100) 0%,
+    var(--color-gray-200) 50%,
+    var(--color-gray-100) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;

@@ -214,7 +214,7 @@ export function SearchPage() {
           >
             {data && (
               <>
-                <ol className={styles.list} aria-label="Search results">
+                <ol className={`${styles.list} stagger`} aria-label="Search results">
                   {data.items.map((item) => (
                     <li key={item.id}>
                       <PropertyCard

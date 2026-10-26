@@ -1,0 +1,171 @@
+/*
+ * Motion: short, purposeful animations. Every animation uses `backwards` fill, so no
+ * transform lingers after it ends (a lingering transform would break sticky and fixed
+ * children). Everything is switched off for people who prefer reduced motion.
+ */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.06);
+  }
+}
+
+@keyframes needle-settle {
+  0% {
+    transform: rotate(-200deg);
+  }
+  70% {
+    transform: rotate(14deg);
+  }
+  85% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes needle-swing {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(-28deg);
+  }
+  60% {
+    transform: rotate(16deg);
+  }
+  80% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes glow-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(143 169 255 / 0.55);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 8px rgb(143 169 255 / 0);
+  }
+}
+
+/* Each page fades up on navigation (the <main> element is keyed by path). */
+.page-enter {
+  animation: fade-up 380ms var(--ease-out) backwards;
+}
+
+/* Lists cascade in, item by item. */
+.stagger > * {
+  animation: fade-up 420ms var(--ease-out) backwards;
+}
+.stagger > :nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > :nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > :nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > :nth-child(5) {
+  animation-delay: 160ms;
+}
+.stagger > :nth-child(6) {
+  animation-delay: 200ms;
+}
+.stagger > :nth-child(7) {
+  animation-delay: 240ms;
+}
+.stagger > :nth-child(8) {
+  animation-delay: 280ms;
+}
+.stagger > :nth-child(n + 9) {
+  animation-delay: 320ms;
+}
+
+/* The compass needle settles on load and swings when the logo is hovered. */
+.logo-needle {
+  transform-box: view-box;
+  transform-origin: 32px 32px;
+  animation: needle-settle 1100ms var(--ease-out) backwards;
+}
+a:hover .logo-needle,
+a:focus-visible .logo-needle {
+  animation: needle-swing 900ms var(--ease-out);
+}
+
+/* Map price markers pop in. */
+.price-marker__pill {
+  animation: pop 320ms var(--ease-out) backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Compass watermark: a large, faint compass behind hero areas. It turns very
+ * slowly; reduced-motion users get it still.
+ * ------------------------------------------------------------------------- */
+@keyframes watermark-turn {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+.watermark {
+  position: absolute;
+  top: 50%;
+  z-index: -1;
+  pointer-events: none;
+  transform: translateY(-50%);
+  animation: watermark-turn 240s linear infinite;
+}
+
+.watermark--hero {
+  right: max(-140px, calc((100vw - 1200px) / 2 - 120px));
+  width: clamp(360px, 48vw, 680px);
+  height: auto;
+  color: rgb(143 169 255 / 0.08);
+}
+
+@media (max-width: 767px) {
+  .watermark--hero {
+    right: -45%;
+    width: 120vw;
+    color: rgb(143 169 255 / 0.06);
+  }
+}

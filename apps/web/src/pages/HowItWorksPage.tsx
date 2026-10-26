@@ -1,151 +1,249 @@
+import {
+  ArrowRight,
+  BadgeCheck,
+  CalendarCheck,
+  Database,
+  FlaskConical,
+  Map as MapIcon,
+  Scale,
+  Sparkles,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { CompassWatermark } from '../components/Logo';
 import { useDocumentTitle } from '../lib/hooks';
 import styles from './HowItWorksPage.module.css';
+
+const SECTIONS = [
+  { id: 'data', label: 'The data' },
+  { id: 'pricing', label: 'Pricing' },
+  { id: 'ranking', label: 'Ranking' },
+  { id: 'offers', label: 'Offers' },
+  { id: 'availability', label: 'Availability' },
+];
+
+const PRICE_STEPS = [
+  {
+    title: 'Room subtotal',
+    text: 'The nightly rate for each night. Friday and Saturday use the weekend rate where there is one.',
+  },
+  { title: 'Fees', text: 'Cleaning or booking fees, charged once per stay.' },
+  {
+    title: 'VAT (15%)',
+    text: 'Calculated once on subtotal plus fees. Included VAT is shown for information, never added twice.',
+  },
+  {
+    title: 'Total',
+    text: 'Subtotal + fees (+ VAT if it wasn’t included). Average per night is the total ÷ nights.',
+  },
+];
+
+const WEIGHTS = [
+  { label: 'Demo score', value: 45, note: 'Unrated places count as 6/10' },
+  { label: 'Price', value: 35, note: 'Cheaper ranks higher' },
+  { label: 'Distance', value: 20, note: 'Closer ranks higher' },
+];
 
 export function HowItWorksPage() {
   useDocumentTitle('How it works');
   return (
-    <article className={`container ${styles.page}`}>
-      <header className={styles.header}>
-        <p className={styles.eyebrow}>Transparency</p>
-        <h1>How Wayfare works</h1>
-        <p className={styles.lede}>
-          Wayfare is a portfolio project that demonstrates accommodation search and price
-          comparison. This page explains exactly what the data is and how prices and rankings are
-          calculated.
-        </p>
+    <article className={styles.page}>
+      <header className={styles.hero}>
+        <CompassWatermark className="watermark watermark--hero" />
+        <div className={`container ${styles.heroInner}`}>
+          <p className={styles.eyebrow}>Transparency</p>
+          <h1>How Wayfare works</h1>
+          <p className={styles.lede}>
+            What the data is, where it comes from, and exactly how every price and ranking is
+            calculated.
+          </p>
+          <nav aria-label="On this page" className={styles.jump}>
+            {SECTIONS.map((s) => (
+              <a key={s.id} href={`#${s.id}`}>
+                {s.label}
+              </a>
+            ))}
+          </nav>
+        </div>
       </header>
 
-      <section aria-labelledby="data">
-        <h2 id="data">What is real and what is simulated</h2>
-        <ul>
-          <li>
-            <strong>Real:</strong> property names, locations, types, star ratings, websites and
-            phone numbers come from{' '}
-            <a
-              href="https://www.openstreetmap.org/copyright"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              OpenStreetMap
-            </a>{' '}
-            (© OpenStreetMap contributors, ODbL). Each real property links to its own website and
-            its OpenStreetMap entry. Amenities marked “confirmed” come from OpenStreetMap too.
-          </li>
-          <li>
-            Wayfare isn’t affiliated with any of these places. Without an OpenStreetMap snapshot,
-            the app falls back to a set of <strong>fictional properties</strong>, which are labelled
-            “Fictional demo property”.
-          </li>
-          <li>
-            The <strong>5 booking providers</strong> are fictional, and the room types and other
-            amenities are simulated.
-          </li>
-          <li>
-            Every offer is <strong>simulated</strong>. Prices, availability and “generated” times
-            come from a deterministic seed script, not from any booking site. Nothing can be booked
-            and no payment is taken.
-          </li>
-          <li>
-            The <strong>demo scores</strong> (out of 10) are synthetic numbers that let you try
-            rating filters and sorting. They are not reviews, and there are no fabricated guest
-            comments.
-          </li>
-          <li>
-            Photos come from Wikimedia Commons under free licences, and each one is credited. Every
-            other image is an original illustration made for this project, labelled “Illustration”,
-            and isn’t a photograph of the place.
-          </li>
-        </ul>
-      </section>
+      <div className={`container ${styles.body}`}>
+        <section aria-labelledby="data-title" id="data" className={styles.section}>
+          <SectionHead icon={<Database size={18} />} id="data-title" title="Real and simulated" />
+          <div className={`${styles.split} stagger`}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <BadgeCheck size={18} aria-hidden="true" /> Real, from OpenStreetMap
+              </h3>
+              <ul className={styles.list}>
+                <li>Property names, locations and types</li>
+                <li>Star ratings, websites and phone numbers</li>
+                <li>Amenities marked “confirmed”</li>
+                <li>Photos from Wikimedia Commons, each credited</li>
+              </ul>
+              <p className={styles.small}>
+                Place data ©{' '}
+                <a
+                  href="https://www.openstreetmap.org/copyright"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  OpenStreetMap contributors
+                </a>{' '}
+                (ODbL). Wayfare isn’t affiliated with any of these places.
+              </p>
+            </div>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <FlaskConical size={18} aria-hidden="true" /> Simulated for the demo
+              </h3>
+              <ul className={styles.list}>
+                <li>The 5 booking providers, their offers and prices</li>
+                <li>Room types, availability and the other amenities</li>
+                <li>Demo scores out of 10. These aren’t reviews.</li>
+                <li>Images labelled “Illustration”</li>
+              </ul>
+              <p className={styles.small}>
+                Nothing can be booked and no payment is taken. Without an OpenStreetMap snapshot,
+                the app shows fictional properties labelled “Fictional demo property”.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      <section aria-labelledby="pricing">
-        <h2 id="pricing">How a total price is calculated</h2>
-        <p>
-          The same calculation, a single database function, is used for search results, price
-          filters, sorting and the offer comparison, so the price on a result card always matches
-          the property page.
-        </p>
-        <ol>
-          <li>
-            <strong>Room subtotal</strong>: the nightly rate for each night of the stay. Friday and
-            Saturday nights use the weekend rate where the offer has one.
-          </li>
-          <li>
-            <strong>Fees</strong>: cleaning or booking fees, charged once per stay.
-          </li>
-          <li>
-            <strong>VAT (15%)</strong>: calculated once on subtotal plus fees. Some providers quote
-            prices that already include VAT; we show the included amount for information but never
-            add it twice. Others quote prices excluding VAT, and we add it.
-          </li>
-          <li>
-            <strong>Total</strong> = subtotal + fees (+ VAT if it wasn’t included). The “average per
-            night” figure is the total divided by the number of nights.
-          </li>
-        </ol>
-        <p>
-          The <strong>budget filter</strong> uses that average nightly figure for each property’s
-          cheapest eligible offer, so fees and VAT can’t sneak past it.
-        </p>
-      </section>
+        <section aria-labelledby="pricing-title" id="pricing" className={styles.section}>
+          <SectionHead
+            icon={<Scale size={18} />}
+            id="pricing-title"
+            title="How a total price is calculated"
+          />
+          <p className={styles.intro}>
+            One database function prices every stay, so search results, budget filters, sorting and
+            the offer comparison always agree.
+          </p>
+          <ol className={`${styles.steps} stagger`}>
+            {PRICE_STEPS.map((step, i) => (
+              <li key={step.title} className={styles.step}>
+                <span className={styles.stepNumber} aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3 className={styles.stepTitle}>{step.title}</h3>
+                <p className={styles.small}>{step.text}</p>
+              </li>
+            ))}
+          </ol>
+          <p className={styles.note}>
+            The <strong>budget filter</strong> uses that all-in average per night, so fees and VAT
+            can’t sneak past it.
+          </p>
+        </section>
 
-      <section aria-labelledby="ranking-title" id="ranking">
-        <h2 id="ranking-title">How results are ranked</h2>
-        <p>
-          The default <strong>Recommended</strong> order combines three signals, each scaled from 0
-          to 1 within your current results:
-        </p>
-        <ul>
-          <li>
-            <strong>45%</strong>: demo score (unrated properties count as 6/10).
-          </li>
-          <li>
-            <strong>35%</strong>: price, where cheaper ranks higher.
-          </li>
-          <li>
-            <strong>20%</strong>: distance from your destination or location, where closer ranks
-            higher. Searches without a location split this weight between score (55%) and price
-            (45%).
-          </li>
-        </ul>
-        <p>
-          No provider pays for placement, and providers don’t affect the order at all. You can
-          switch to sorting by price, demo score or distance at any time.
-        </p>
-      </section>
+        <section aria-labelledby="ranking-title" id="ranking" className={styles.section}>
+          <SectionHead
+            icon={<Sparkles size={18} />}
+            id="ranking-title"
+            title="How results are ranked"
+          />
+          <p className={styles.intro}>
+            <strong>Recommended</strong> blends three signals, each scaled from 0 to 1 within your
+            current results. No provider pays for placement.
+          </p>
+          <div
+            className={styles.weights}
+            role="img"
+            aria-label="Weights: demo score 45%, price 35%, distance 20%"
+          >
+            {WEIGHTS.map((w) => (
+              <span key={w.label} className={styles.weight} style={{ flexGrow: w.value }}>
+                {w.value}%
+              </span>
+            ))}
+          </div>
+          <dl className={styles.legend}>
+            {WEIGHTS.map((w) => (
+              <div key={w.label}>
+                <dt>
+                  <span className={styles.swatch} aria-hidden="true" /> {w.label} · {w.value}%
+                </dt>
+                <dd>{w.note}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className={styles.note}>
+            Searches without a location split the distance weight: score 55%, price 45%. You can
+            sort by price, demo score or distance at any time.
+          </p>
+        </section>
 
-      <section aria-labelledby="offers">
-        <h2 id="offers">Cheapest vs recommended offers</h2>
-        <p>
-          On a property page, <strong>Cheapest</strong> is simply the lowest total for your stay.{' '}
-          <strong>Recommended</strong> is the cheapest offer with free cancellation, if it costs at
-          most 10% more than the cheapest. Otherwise it’s the cheapest offer. The reason is always
-          shown, and if the two offers differ in meals or cancellation terms, the page says so.
-        </p>
-      </section>
+        <section aria-labelledby="offers-title" id="offers" className={styles.section}>
+          <SectionHead
+            icon={<BadgeCheck size={18} />}
+            id="offers-title"
+            title="Cheapest vs recommended offers"
+          />
+          <div className={`${styles.split} stagger`}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>Cheapest</h3>
+              <p className={styles.small}>Simply the lowest total for your exact stay.</p>
+            </div>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>Recommended</h3>
+              <p className={styles.small}>
+                The cheapest offer with free cancellation, if it costs at most 10% more. Otherwise
+                the cheapest. The reason is always shown, and differences in meals or cancellation
+                terms are called out.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      <section aria-labelledby="availability">
-        <h2 id="availability">Availability</h2>
-        <p>
-          A property appears in results only if at least one of its room types fits your group,
-          meets any minimum stay, and has no simulated booking overlapping your dates. Around one in
-          five rooms is pre-booked for tonight, so the last-minute search shows realistic gaps.
-        </p>
-      </section>
+        <section aria-labelledby="availability-title" id="availability" className={styles.section}>
+          <SectionHead
+            icon={<CalendarCheck size={18} />}
+            id="availability-title"
+            title="Availability and maps"
+          />
+          <div className={`${styles.split} stagger`}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <CalendarCheck size={18} aria-hidden="true" /> Availability
+              </h3>
+              <p className={styles.small}>
+                A place appears only if a room fits your group, meets any minimum stay and has no
+                simulated booking on your dates. About one room in five is pre-booked for tonight,
+                so last-minute searches show realistic gaps.
+              </p>
+            </div>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <MapIcon size={18} aria-hidden="true" /> Maps and location
+              </h3>
+              <p className={styles.small}>
+                Leaflet with OpenStreetMap tiles. Tiles need internet; everything else runs locally.
+                “Use my location” always asks first, and typing a destination works too.
+              </p>
+            </div>
+          </div>
+        </section>
 
-      <section aria-labelledby="maps">
-        <h2 id="maps">Maps and location</h2>
-        <p>
-          Maps use Leaflet with OpenStreetMap tiles (© OpenStreetMap contributors). Tiles need an
-          internet connection; everything else runs locally. “Use my location” asks your browser for
-          permission and is never required. You can always type a destination instead.
-        </p>
-      </section>
-
-      <p className={styles.back}>
-        <Link to="/">← Back to search</Link>
-      </p>
+        <div className={styles.cta}>
+          <p>Ready to compare?</p>
+          <Link to="/search" className={styles.ctaButton}>
+            Browse all stays <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
     </article>
+  );
+}
+
+function SectionHead({ icon, id, title }: { icon: ReactNode; id: string; title: string }) {
+  return (
+    <div className={styles.sectionHead}>
+      <span className={styles.sectionIcon} aria-hidden="true">
+        {icon}
+      </span>
+      <h2 id={id}>{title}</h2>
+    </div>
   );
 }

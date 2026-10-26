@@ -27,7 +27,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .title {
@@ -65,7 +65,7 @@
   margin: 0;
   overflow: hidden;
   border-radius: var(--radius-lg);
-  background: var(--color-sand-100);
+  background: var(--color-gray-100);
 }
 
 .mainImage {
@@ -132,7 +132,7 @@
   padding: var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  background: var(--color-sand-100);
+  background: var(--color-gray-100);
   scroll-margin-top: calc(var(--header-height) + var(--space-4));
 }
 
@@ -296,7 +296,7 @@
 
 .roomName {
   font-weight: 700;
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
 }
 
 .roomMeta {
@@ -338,8 +338,9 @@
 
 .amenityList li {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-1) var(--space-2);
 }
 
 .amenityList svg {
@@ -347,12 +348,13 @@
 }
 
 .verified {
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-sm);
-  background: var(--color-success-100);
-  color: var(--color-success-700);
-  font-size: var(--text-xs);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-royal-100);
+  color: var(--color-royal-800);
+  font-size: 0.6875rem;
   font-weight: 600;
+  line-height: 1.6;
 }
 
 .realLinks {
@@ -393,8 +395,8 @@
 }
 
 .provenance {
-  background: var(--color-navy-50);
-  border-color: var(--color-navy-100);
+  background: var(--color-royal-50);
+  border-color: var(--color-royal-100);
 }
 
 .provenanceList {

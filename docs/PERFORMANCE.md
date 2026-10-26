@@ -52,7 +52,7 @@ Remaining options for a much larger catalogue: precompute a nightly "from" price
 | Results map chunk (Leaflet + markercluster), **lazy**   | 188 kB        | 54 kB  |
 | Property map chunk, **lazy**                            | 1.4 kB        | 0.8 kB |
 | CSS                                                     | 45 kB         | 9 kB   |
-| Fonts (Inter, Fraunces; latin subsets load on demand)   | 37–85 kB each | —      |
+| Font (Inter variable; latin subsets load on demand)     | 37–85 kB each | —      |
 
 - **Leaflet and its CSS are code-split.** They load only when a map is rendered.
 - **The main bundle is mostly vendor code.** React DOM accounts for about half of the source, and Zod is shared with the API for URL validation. Splitting routes would save little; the warning threshold is raised to 800 kB with that justification.

@@ -98,6 +98,6 @@ Prefer not to use Docker? Install PostgreSQL 17 with PostGIS, create `wayfare` a
 
 ## Credits and licence
 
-Place and map data © OpenStreetMap contributors (ODbL). Photos from Wikimedia Commons are credited individually under their own licences. Leaflet (BSD-2-Clause), leaflet.markercluster (MIT), Inter and Fraunces fonts (SIL OFL), Lucide icons (ISC). Other images are original illustrations, labelled as such.
+Place and map data © OpenStreetMap contributors (ODbL). Photos from Wikimedia Commons are credited individually under their own licences. Leaflet (BSD-2-Clause), leaflet.markercluster (MIT), Inter font (SIL OFL), Lucide icons (ISC). Other images are original illustrations, labelled as such.
 
 Code is released under the [MIT licence](LICENSE).

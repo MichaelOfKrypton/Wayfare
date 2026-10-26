@@ -127,7 +127,7 @@ export function OfferComparison({
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="stagger">
               {group.offers.map((offer) => (
                 <OfferRow key={offer.id} offer={offer} onView={() => setActiveOffer(offer)} />
               ))}

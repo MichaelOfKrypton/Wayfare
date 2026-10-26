@@ -1,6 +1,7 @@
-import { FlaskConical } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
+import { Logo } from '../components/Logo';
 import { useFilters } from '../lib/queries';
 import styles from './Layout.module.css';
 
@@ -28,21 +29,7 @@ export function Layout() {
       <header className={styles.header}>
         <div className={`${styles.headerInner} ${isSearch ? styles.wide : ''}`}>
           <Link to="/" className={styles.brand} aria-label="Wayfare home">
-            <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
-              <rect width="64" height="64" rx="14" fill="currentColor" />
-              <circle cx="32" cy="32" r="21" fill="none" stroke="#0b1f35" strokeWidth="3.5" />
-              <path
-                d="M32 14.5v4.5M32 45v4.5M14.5 32h4.5M45 32h4.5"
-                stroke="#0b1f35"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-              <g transform="rotate(40 32 32)">
-                <path d="M32 15.5 L37.5 32 L26.5 32 Z" fill="#e08a4f" />
-                <path d="M32 48.5 L37.5 32 L26.5 32 Z" fill="#0b1f35" />
-              </g>
-              <circle cx="32" cy="32" r="2.5" fill="currentColor" />
-            </svg>
+            <Logo size={32} />
             <span className={styles.wordmark}>Wayfare</span>
           </Link>
           <nav aria-label="Main" className={styles.nav}>
@@ -64,7 +51,7 @@ export function Layout() {
 
       <div className={styles.notice} role="note">
         <div className={`${styles.noticeInner} ${isSearch ? styles.wide : ''}`}>
-          <FlaskConical size={16} aria-hidden="true" />
+          <Info size={14} aria-hidden="true" />
           <p>
             <strong>Portfolio demo.</strong>{' '}
             {realPlaces
@@ -75,7 +62,8 @@ export function Layout() {
         </div>
       </div>
 
-      <main id="main" tabIndex={-1} className={styles.main}>
+      {/* Keyed by path so each page plays its entrance animation on navigation. */}
+      <main key={location.pathname} id="main" tabIndex={-1} className={`${styles.main} page-enter`}>
         <Outlet />
       </main>
 
@@ -84,7 +72,10 @@ export function Layout() {
           <div className="container">
             <div className={styles.footerGrid}>
               <div>
-                <p className={styles.footerBrand}>Wayfare</p>
+                <p className={styles.footerBrand}>
+                  <Logo size={28} />
+                  Wayfare
+                </p>
                 <p className={styles.footerText}>
                   A South African accommodation discovery and price-comparison demo, built as a
                   software engineering portfolio project.

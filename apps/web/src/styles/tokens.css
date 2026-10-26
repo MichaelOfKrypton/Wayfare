@@ -1,43 +1,53 @@
 /* Wayfare design tokens — see docs/DESIGN_SYSTEM.md. Components use these, never raw values. */
 :root {
-  /* Colour */
-  --color-navy-900: #0b1f35;
-  --color-navy-800: #0f2a47;
-  --color-navy-700: #12355b;
-  --color-navy-600: #1c4a7a;
-  --color-navy-200: #c3d3e6;
-  --color-navy-100: #dce6f2;
-  --color-navy-50: #eff4fa;
-  --color-ochre-700: #8f4015;
-  --color-ochre-600: #b0521c;
-  --color-ochre-100: #f8e6d9;
-  --color-sand-50: #faf8f4;
-  --color-sand-100: #f3efe7;
-  --color-sand-200: #e6e0d4;
-  --color-sand-300: #d3cbbb;
+  /* Colour: ~60% light grays, ~30% white surfaces and dark gray chrome, ~10% blue: navy for actions, royal and light blues for highlights. */
+  --color-gray-950: #16181c;
+  --color-gray-900: #1f2228;
+  --color-gray-800: #2b2f36;
+  --color-gray-700: #3d424b;
+  --color-gray-600: #5d6470;
+  --color-gray-400: #a4abb6;
+  --color-gray-300: #d5d9df;
+  --color-gray-200: #e6e8ec;
+  --color-gray-100: #f1f2f4;
+  --color-gray-50: #f8f9fa;
+  --color-navy-900: #132a5e;
+  --color-navy-800: #172f70;
+  --color-navy-700: #1e3a8a; /* navy primary: white on it is 10.4:1 */
+  --color-royal-800: #2342b8;
+  --color-royal-700: #2f54d6;
+  --color-royal-600: #4169e1; /* royal blue: 4.85:1 on white */
+  --color-royal-300: #9db3f2;
+  --color-royal-200: #c9d4fb;
+  --color-royal-100: #e3e9fd;
+  --color-royal-50: #f2f5ff;
+  --color-sky-400: #8fa9ff; /* light blue for accents on dark gray (7:1) */
   --color-surface: #ffffff;
-  --color-ink: #14202e;
-  --color-ink-muted: #55606e;
-  --color-success-700: #1d6b4f;
-  --color-success-100: #ddf1e8;
+  --color-success-700: #17694b;
+  --color-success-100: #dcf3e8;
   --color-warning-700: #7a4b00;
-  --color-warning-100: #fcefd2;
-  --color-danger-700: #a3261b;
-  --color-danger-100: #fbe3e0;
+  --color-warning-100: #fdf0d5;
+  --color-danger-700: #b42318;
+  --color-danger-100: #fde4e1;
 
   /* Semantic aliases */
-  --color-bg: var(--color-sand-50);
-  --color-text: var(--color-ink);
-  --color-text-muted: var(--color-ink-muted);
-  --color-border: var(--color-sand-200);
-  --color-border-strong: var(--color-sand-300);
+  --color-bg: var(--color-gray-50);
+  --color-text: var(--color-gray-900);
+  --color-text-muted: var(--color-gray-600);
+  --color-border: var(--color-gray-200);
+  --color-border-strong: var(--color-gray-300);
+  --color-chrome: var(--color-gray-900); /* header, hero, footer */
   --color-primary: var(--color-navy-700);
-  --color-primary-hover: var(--color-navy-600);
-  --color-accent: var(--color-ochre-600);
-  --color-focus: #2f6fb3;
+  --color-primary-hover: var(--color-navy-900);
+  --color-link: var(--color-navy-700);
+  --color-accent: var(--color-royal-600);
+  --color-accent-soft: var(--color-royal-100);
+  --color-accent-text: var(--color-royal-700);
+  --color-accent-on-dark: var(--color-sky-400);
+  --color-focus: var(--color-royal-600);
 
   /* Typography */
-  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-display: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -67,11 +77,11 @@
   /* Shape and depth */
   --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-lg: 14px;
   --radius-pill: 999px;
-  --shadow-sm: 0 1px 2px rgb(11 31 53 / 0.06);
-  --shadow-md: 0 4px 14px rgb(11 31 53 / 0.08), 0 1px 3px rgb(11 31 53 / 0.06);
-  --shadow-lg: 0 18px 40px rgb(11 31 53 / 0.16), 0 4px 10px rgb(11 31 53 / 0.08);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-md: 0 4px 12px rgb(16 24 40 / 0.07), 0 1px 3px rgb(16 24 40 / 0.05);
+  --shadow-lg: 0 16px 36px rgb(16 24 40 / 0.12), 0 4px 10px rgb(16 24 40 / 0.06);
 
   /* Motion */
   --duration-fast: 150ms;

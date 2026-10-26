@@ -9,8 +9,13 @@
   box-shadow: var(--shadow-lg);
 }
 
+.dialog[open] {
+  animation: pop 260ms var(--ease-out) backwards;
+}
+
 .dialog::backdrop {
-  background: rgb(11 31 53 / 0.45);
+  background: rgb(22 24 28 / 0.5);
+  animation: fade-in 200ms ease-out backwards;
 }
 
 .panel {
@@ -41,7 +46,7 @@
 }
 
 .close:hover {
-  background: var(--color-sand-100);
+  background: var(--color-gray-100);
   color: var(--color-text);
 }
 
@@ -58,6 +63,6 @@
   gap: var(--space-3);
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--color-border);
-  background: var(--color-sand-50);
+  background: var(--color-gray-50);
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }

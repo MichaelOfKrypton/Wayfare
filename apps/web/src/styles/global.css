@@ -1,4 +1,5 @@
 @import './tokens.css';
+@import './motion.css';
 
 *,
 *::before,
@@ -30,13 +31,17 @@ h4 {
   margin: 0;
   line-height: var(--leading-tight);
   font-weight: 600;
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
 }
 
 h1,
 h2 {
   font-family: var(--font-display);
-  font-weight: 560;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+h3 {
   letter-spacing: -0.01em;
 }
 
@@ -45,8 +50,9 @@ p {
 }
 
 a {
-  color: var(--color-primary);
-  text-underline-offset: 0.18em;
+  color: var(--color-link);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
 a:hover {
@@ -78,7 +84,21 @@ button {
 }
 
 ::selection {
-  background: var(--color-navy-100);
+  background: var(--color-royal-200);
+}
+
+/* Royal-blue marker stroke behind a word or two (white text on it is 4.85:1). */
+.highlight {
+  padding-inline: 0.04em;
+  background: linear-gradient(
+    180deg,
+    transparent 66%,
+    var(--color-accent) 66%,
+    var(--color-accent) 88%,
+    transparent 88%
+  );
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .visually-hidden {
@@ -136,11 +156,11 @@ button {
   position: relative;
   padding: 0 9px;
   background: var(--color-surface);
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
   border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-md);
-  font: 600 13px/1.2 var(--font-sans);
+  font: 650 13px/1.2 var(--font-sans);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
   transition:
@@ -163,29 +183,29 @@ button {
 }
 
 .price-marker--highlighted .price-marker__pill {
-  background: var(--color-navy-700);
+  background: var(--color-royal-600);
   color: #fff;
-  border-color: var(--color-navy-700);
+  border-color: var(--color-royal-600);
   transform: scale(1.08);
 }
 
 .price-marker--selected .price-marker__pill {
-  background: var(--color-accent);
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--color-accent);
+  border-color: var(--color-primary);
   transform: scale(1.12);
 }
 
 .price-marker--reference .price-marker__pill {
-  background: var(--color-navy-900);
+  background: var(--color-gray-900);
   color: #fff;
-  border-color: var(--color-navy-900);
+  border-color: var(--color-gray-900);
   font-weight: 500;
 }
 
 .leaflet-container {
   font-family: var(--font-sans);
-  background: var(--color-sand-100);
+  background: var(--color-gray-100);
 }
 
 .leaflet-container :focus-visible {
@@ -196,9 +216,9 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-navy-700);
+  background: var(--color-gray-900);
   color: #fff;
-  border: 3px solid rgb(255 255 255 / 0.85);
+  border: 3px solid rgb(255 255 255 / 0.9);
   border-radius: 50%;
   box-shadow: var(--shadow-md);
   font: 600 13px/1 var(--font-sans);

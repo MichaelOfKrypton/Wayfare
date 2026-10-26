@@ -3,6 +3,7 @@ import { ArrowRight, BadgePercent, Clock3, Layers, LocateFixed } from 'lucide-re
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
+import { CompassWatermark } from '../components/Logo';
 import { Skeleton } from '../components/States';
 import { SearchForm } from '../features/search/SearchForm';
 import { geolocationMessage, requestCurrentPosition } from '../lib/geolocation';
@@ -45,10 +46,11 @@ export function HomePage() {
   return (
     <>
       <section className={styles.hero} aria-labelledby="hero-title">
+        <CompassWatermark className="watermark watermark--hero" />
         <div className={`container ${styles.heroInner}`}>
           <p className={styles.eyebrow}>South African stays, compared</p>
           <h1 id="hero-title" className={styles.title}>
-            Find tonight’s bed or next month’s escape.
+            Find tonight’s bed or <span className="highlight">next month’s escape.</span>
           </h1>
           <p className={styles.lede}>
             Search guesthouses, lodges, farm stays and city hotels, then compare every provider’s
@@ -87,7 +89,7 @@ export function HomePage() {
             Browse all stays <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </div>
-        <ul className={styles.destinations}>
+        <ul className={`${styles.destinations} stagger`}>
           {featured.isPending &&
             Array.from({ length: 8 }, (_, i) => (
               <li key={i} className={styles.destinationSkeleton}>
@@ -141,9 +143,11 @@ export function HomePage() {
         <h2 id="values-title" className={styles.valuesTitle}>
           Comparison you can check
         </h2>
-        <div className={styles.valueGrid}>
+        <div className={`${styles.valueGrid} stagger`}>
           <article className={styles.value}>
-            <BadgePercent size={24} aria-hidden="true" />
+            <span className={styles.valueIcon}>
+              <BadgePercent size={20} aria-hidden="true" />
+            </span>
             <h3>Total stay price, not teaser rates</h3>
             <p>
               Every offer is priced for your exact dates, including weekend rates, booking or
@@ -152,7 +156,9 @@ export function HomePage() {
             </p>
           </article>
           <article className={styles.value}>
-            <Layers size={24} aria-hidden="true" />
+            <span className={styles.valueIcon}>
+              <Layers size={20} aria-hidden="true" />
+            </span>
             <h3>One property, many providers</h3>
             <p>
               Offers are grouped by room type with meal plan and cancellation terms side by side, so
@@ -161,7 +167,9 @@ export function HomePage() {
             </p>
           </article>
           <article className={styles.value}>
-            <Clock3 size={24} aria-hidden="true" />
+            <span className={styles.valueIcon}>
+              <Clock3 size={20} aria-hidden="true" />
+            </span>
             <h3>Made for last-minute stays</h3>
             <p>
               “Tonight near me” finds places with a room free tonight, sorted by distance and shown

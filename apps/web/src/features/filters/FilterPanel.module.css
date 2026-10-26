@@ -35,7 +35,7 @@
   margin-bottom: var(--space-1);
   font-size: var(--text-sm);
   font-weight: 700;
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
 }
 
 .help {
@@ -173,7 +173,7 @@
 }
 
 .chip:hover {
-  border-color: var(--color-navy-600);
+  border-color: var(--color-royal-600);
 }
 
 .chip[aria-pressed='true'] {

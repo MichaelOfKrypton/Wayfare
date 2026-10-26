@@ -210,7 +210,7 @@
 .previewName {
   font-family: var(--font-display);
   font-weight: 600;
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
 }
 
 .previewPrice {

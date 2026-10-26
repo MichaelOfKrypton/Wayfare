@@ -7,16 +7,22 @@
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
   transition:
-    border-color var(--duration-fast),
-    box-shadow var(--duration-fast);
+    border-color var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
   scroll-margin: var(--space-20);
   container-type: inline-size;
 }
 
+.card:hover,
 .card:focus-within,
 .highlighted {
-  border-color: var(--color-navy-200);
-  box-shadow: var(--shadow-md);
+  border-color: var(--color-royal-200);
+  box-shadow: var(--shadow-lg);
+}
+
+.card:hover {
+  transform: translateY(-2px);
 }
 
 .selected {
@@ -39,7 +45,16 @@
 
 .media {
   position: relative;
-  background: var(--color-sand-100);
+  overflow: hidden;
+  background: var(--color-gray-100);
+}
+
+.image {
+  transition: transform 600ms var(--ease-out);
+}
+
+.card:hover .image {
+  transform: scale(1.04);
 }
 
 .image,
@@ -93,7 +108,7 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-accent-text);
 }
 
 .name {
@@ -103,7 +118,7 @@
 }
 
 .link {
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
   text-decoration: none;
 }
 
@@ -116,7 +131,7 @@
 }
 
 .link:hover {
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
   text-decoration: underline;
 }
 
@@ -207,7 +222,7 @@
 .total {
   font-size: var(--text-xl);
   font-weight: 700;
-  color: var(--color-navy-900);
+  color: var(--color-gray-900);
 }
 
 .totalLabel {
@@ -223,20 +238,31 @@
 
 .simulated {
   font-weight: 600;
-  color: var(--color-warning-700);
+  color: var(--color-accent-text);
 }
 
+/* Quiet outline by default so blue stays the accent; fills in when the card is hovered. */
 .cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   margin-top: var(--space-2);
   padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-royal-200);
   border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-royal-50);
+  color: var(--color-primary);
   font-size: var(--text-sm);
   font-weight: 600;
   text-decoration: none;
+  transition:
+    background var(--duration-base) var(--ease-out),
+    border-color var(--duration-base) var(--ease-out),
+    color var(--duration-base) var(--ease-out);
 }
 
 .card:hover .cta {
-  background: var(--color-primary-hover);
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #fff;
 }

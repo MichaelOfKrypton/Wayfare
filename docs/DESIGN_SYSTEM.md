@@ -1,29 +1,26 @@
 # Design System — Wayfare
 
-The design direction is **editorial travel**: calm and confident, with the information density of a comparison tool and the warmth of a travel magazine. The palette is deep navy on warm sand neutrals, with one restrained ochre accent. A serif display face carries the headings and a neutral sans carries the UI.
+The design direction is **clean and modern**: calm, confident and easy to scan, with the information density of a comparison tool. The palette follows a 60/30/10 balance: about 60% light grays, 30% white surfaces and dark-gray chrome (header, hero, footer), and 10% blue. Navy is the primary action colour, and royal and light blues are used for highlights. One sans-serif family (Inter) carries everything.
 
 All tokens live in `apps/web/src/styles/tokens.css` as CSS custom properties. Components never hard-code colours, spacing or radii.
 
 ## 1. Colour
 
-| Token                          | Value                 | Use                                                                          |
-| ------------------------------ | --------------------- | ---------------------------------------------------------------------------- |
-| `--color-navy-900`             | `#0B1F35`             | Header, footer, dark surfaces                                                |
-| `--color-navy-700`             | `#12355B`             | **Primary brand**, primary buttons, links                                    |
-| `--color-navy-600`             | `#1C4A7A`             | Primary hover                                                                |
-| `--color-navy-100`             | `#DCE6F2`             | Selected / hover tints                                                       |
-| `--color-navy-50`              | `#EFF4FA`             | Subtle info surfaces                                                         |
-| `--color-ochre-600`            | `#B0521C`             | **Accent**: cheapest badge, selected marker, key highlights (4.9:1 on white) |
-| `--color-ochre-100`            | `#F8E6D9`             | Accent tint                                                                  |
-| `--color-sand-50`              | `#FAF8F4`             | Page background                                                              |
-| `--color-sand-100`             | `#F3EFE7`             | Secondary surfaces, sidebar                                                  |
-| `--color-sand-200`             | `#E6E0D4`             | Borders / dividers                                                           |
-| `--color-surface`              | `#FFFFFF`             | Cards, inputs                                                                |
-| `--color-ink`                  | `#14202E`             | Body text (15.9:1 on sand-50)                                                |
-| `--color-ink-muted`            | `#55606E`             | Secondary text (6.0:1 on sand-50)                                            |
-| `--color-success-700` / `-100` | `#1D6B4F` / `#DDF1E8` | Free cancellation, available                                                 |
-| `--color-warning-700` / `-100` | `#7A4B00` / `#FCEFD2` | Demo / simulated notices                                                     |
-| `--color-danger-700` / `-100`  | `#A3261B` / `#FBE3E0` | Errors, non-refundable                                                       |
+| Token                          | Value                 | Use                                                                         |
+| ------------------------------ | --------------------- | --------------------------------------------------------------------------- |
+| `--color-gray-900`             | `#1F2228`             | **Chrome** (header, hero, footer) and body text (15.9:1 on white)           |
+| `--color-gray-600`             | `#5D6470`             | Secondary text (5.7:1 on gray-50)                                           |
+| `--color-gray-200` / `-300`    | `#E6E8EC` / `#D5D9DF` | Borders / dividers                                                          |
+| `--color-gray-100` / `-50`     | `#F1F2F4` / `#F8F9FA` | Secondary surfaces / page background                                        |
+| `--color-surface`              | `#FFFFFF`             | Cards, inputs                                                               |
+| `--color-navy-700`             | `#1E3A8A`             | **Primary**: buttons, links, logo tile, score badges (white on it: 10.4:1)  |
+| `--color-navy-900`             | `#132A5E`             | Primary hover                                                               |
+| `--color-royal-600`            | `#4169E1`             | Royal blue highlights: headline marker, hovered map pin, focus ring         |
+| `--color-royal-100` / `-50`    | `#E3E9FD` / `#F2F5FF` | Selected rows, tints, soft buttons                                          |
+| `--color-sky-400`              | `#8FA9FF`             | Light-blue accents on dark gray (7:1): eyebrow labels, active nav underline |
+| `--color-success-700` / `-100` | `#17694B` / `#DCF3E8` | Free cancellation, available                                                |
+| `--color-warning-700` / `-100` | `#7A4B00` / `#FDF0D5` | Warnings                                                                    |
+| `--color-danger-700` / `-100`  | `#B42318` / `#FDE4E1` | Errors, non-refundable                                                      |
 
 **Rules:**
 
@@ -32,23 +29,23 @@ All tokens live in `apps/web/src/styles/tokens.css` as CSS custom properties. Co
 
 ## 2. Typography
 
-| Token              | Value                                                                                |
-| ------------------ | ------------------------------------------------------------------------------------ |
-| `--font-display`   | `"Fraunces Variable", Georgia, serif`: page titles, property names, section headings |
-| `--font-sans`      | `"Inter Variable", system-ui, sans-serif`: everything else                           |
-| Scale (`--text-*`) | xs 12 · sm 14 · base 16 · md 18 · lg 20 · xl 24 · 2xl 30 · 3xl 38 · 4xl 48 (px)      |
-| Line height        | 1.5 body · 1.2 headings                                                              |
-| Weights            | 400 body · 500 UI labels · 600 emphasis/prices · Fraunces 500–600 headings           |
+| Token              | Value                                                                           |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `--font-display`   | `"Inter Variable"` at 700 with tight tracking (−0.025 to −0.035em): headings    |
+| `--font-sans`      | `"Inter Variable", system-ui, sans-serif`: everything else                      |
+| Scale (`--text-*`) | xs 12 · sm 14 · base 16 · md 18 · lg 20 · xl 24 · 2xl 30 · 3xl 38 · 4xl 48 (px) |
+| Line height        | 1.5 body · 1.2 headings                                                         |
+| Weights            | 400 body · 500 UI labels · 600 emphasis/prices · 700 headings                   |
 
 Prices use `font-variant-numeric: tabular-nums` so figures align in comparison tables. The minimum text size is 12 px, used only for meta labels.
 
 ## 3. Spacing, radii, elevation
 
 - **Spacing** (`--space-*`, 4 px base): 1=4 · 2=8 · 3=12 · 4=16 · 5=20 · 6=24 · 8=32 · 10=40 · 12=48 · 16=64 · 20=80.
-- **Radii:** `--radius-sm` 4 (inputs, chips) · `--radius-md` 8 (buttons, cards) · `--radius-lg` 12 (panels, dialogs) · `--radius-pill`. Rounding is deliberately modest.
-- **Borders:** `1px solid var(--color-sand-200)` is the default separator. Prefer borders over shadows.
-- **Shadows:** `--shadow-sm` (cards at rest, barely visible), `--shadow-md` (hover / sticky bars), `--shadow-lg` (dialogs, map popovers). All tinted navy at low alpha.
-- **Motion:** 150 ms ease-out for hover and focus, 200 ms for drawers. Everything is disabled under `prefers-reduced-motion`.
+- **Radii:** `--radius-sm` 4 (inputs, chips) · `--radius-md` 8 (buttons, cards) · `--radius-lg` 14 (panels, dialogs) · `--radius-pill`. Rounding is deliberately modest.
+- **Borders:** `1px solid var(--color-gray-200)` is the default separator. Prefer borders over shadows.
+- **Shadows:** `--shadow-sm` (cards at rest, barely visible), `--shadow-md` (hover / sticky bars), `--shadow-lg` (dialogs, map popovers). All neutral gray at low alpha.
+- **Motion** (`styles/motion.css`): pages fade up on navigation; lists (destinations, results, offers) cascade in 40 ms apart; cards and buttons lift on hover and press in on click; the logo needle settles on load and swings on hover; map pins pop in; the hero glow and compass watermark drift slowly. Animations use `backwards` fill so no transform lingers (which would break sticky and fixed elements). Everything is disabled under `prefers-reduced-motion`.
 
 ## 4. Layout & breakpoints
 
@@ -85,7 +82,8 @@ The content max width is 1200 px (marketing pages) and full-bleed for the search
 ## 6. Iconography & imagery
 
 - **Icons:** `lucide-react`, 1.75 px stroke, 16/20/24 px sizes, `aria-hidden` when decorative. No emoji in the UI.
-- **Imagery:** original generated SVG illustrations (ADR-011), 3:2 aspect ratio, with an "Illustration" caption on galleries.
+- **Logo:** a solid-white compass on a navy tile (`components/Logo.tsx`, `public/favicon.svg`). `CompassWatermark` draws the compass alone as a large, faint background mark on the home and How it works heroes.
+- **Imagery:** credited Wikimedia Commons photos where available; otherwise original generated SVG illustrations (ADR-011) in the same palette, 3:2, labelled "Illustration".
 
 ## 7. Content tone
 
