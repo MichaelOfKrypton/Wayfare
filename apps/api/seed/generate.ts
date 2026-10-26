@@ -10,15 +10,15 @@ import {
   type PropertyTypeSlug,
   type ProviderSeed,
 } from './data/catalog';
-import { DESTINATIONS } from './data/destinations';
-import {
-  ANCHORS,
-  PROPERTIES,
-  type Anchor,
-  type PropertySeed,
-  type Theme,
-  type Tier,
-} from './data/properties';
+import { DESTINATIONS, type DestinationSeed } from './data/destinations';
+import { ANCHORS, PROPERTIES, type Anchor, type Theme, type Tier } from './data/properties';
+
+/** The parts of a property seed the generator needs (fictional or real). */
+export interface PropertyBasics {
+  name: string;
+  type: PropertyTypeSlug;
+  tier: Tier;
+}
 import { Rng, slugify } from './rng';
 
 export const IMAGE_VARIANTS = {
@@ -57,12 +57,33 @@ export interface GeneratedRoomType {
   blocks: [string, string][];
 }
 
+export interface GeneratedImage {
+  url: string;
+  alt: string;
+  /** Attribution for third-party photos; null for Wayfare's own illustrations. */
+  credit?: string | null;
+  creditUrl?: string | null;
+  licence?: string | null;
+}
+
+/** Real-world facts carried over from OpenStreetMap (absent for fictional properties). */
+export interface RealPlaceFacts {
+  osmType: 'node' | 'way' | 'relation';
+  osmId: number;
+  websiteUrl: string | null;
+  phone: string | null;
+  streetAddress: string | null;
+  stars: number | null;
+  /** Amenity slugs OpenStreetMap confirms; all others are simulated. */
+  confirmedAmenitySlugs: string[];
+}
+
 export interface GeneratedProperty {
   slug: string;
   name: string;
   typeSlug: PropertyTypeSlug;
   destinationSlug: string;
-  suburb: string;
+  suburb: string | null;
   lat: number;
   lng: number;
   summary: string;
@@ -70,18 +91,26 @@ export interface GeneratedProperty {
   checkInFrom: string | null;
   checkInUntil: string | null;
   checkOutUntil: string | null;
-  images: { url: string; alt: string }[];
+  images: GeneratedImage[];
   amenitySlugs: string[];
   roomTypes: GeneratedRoomType[];
   rating: { score: number; count: number } | null;
   listings: { providerSlug: string; externalRef: string }[];
   offers: GeneratedOffer[];
+  real?: RealPlaceFacts;
+}
+
+export interface DatasetDestination extends DestinationSeed {
+  photo?: { url: string; credit: string; creditUrl: string } | null;
 }
 
 export interface Dataset {
+  source: 'synthetic' | 'osm';
   referenceDate: string;
-  destinations: typeof DESTINATIONS;
+  destinations: DatasetDestination[];
   properties: GeneratedProperty[];
+  /** Minimum distance between two properties; real buildings can share a site. */
+  minSpacingKm: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -389,7 +418,7 @@ const BASE_RATE_RANDS: Record<Tier, [number, number]> = {
 // ---------------------------------------------------------------------------
 // Amenities
 // ---------------------------------------------------------------------------
-function chooseAmenities(rng: Rng, seed: PropertySeed, anchor: Anchor): string[] {
+function chooseAmenities(rng: Rng, seed: PropertyBasics, anchor: Anchor): string[] {
   const set = new Set<string>();
   const t = seed.type;
   const premium = tierAtLeast(seed.tier, 'premium');
@@ -483,7 +512,7 @@ const TYPE_SENTENCES: Record<PropertyTypeSlug, string> = {
   backpackers: '{name} is a sociable, budget-friendly hostel with private rooms.',
 };
 
-function describe(rng: Rng, seed: PropertySeed, anchor: Anchor, amenityNames: string[]) {
+function describe(rng: Rng, seed: PropertyBasics, anchor: Anchor, amenityNames: string[]) {
   const typeName = PROPERTY_TYPES.find((t) => t.slug === seed.type)!.name;
   const intro = rng.pick(THEME_INTROS[anchor.theme]).replace('{suburb}', anchor.suburb);
   const highlights = rng.shuffle(amenityNames.filter((n) => n !== 'Wi-Fi')).slice(0, 3);
@@ -506,7 +535,7 @@ function describe(rng: Rng, seed: PropertySeed, anchor: Anchor, amenityNames: st
 // ---------------------------------------------------------------------------
 // Offers
 // ---------------------------------------------------------------------------
-function mealPlansFor(seed: PropertySeed): MealPlan[] {
+function mealPlansFor(seed: PropertyBasics): MealPlan[] {
   switch (seed.type) {
     case 'bed-and-breakfast':
       return ['breakfast'];
@@ -537,7 +566,7 @@ const round10 = (rands: number) => Math.max(10, Math.round(rands / 10) * 10);
 
 function buildOffers(
   rng: Rng,
-  seed: PropertySeed,
+  seed: PropertyBasics,
   anchor: Anchor,
   rooms: { template: RoomTemplate; baseRands: number }[],
   providers: ProviderSeed[],
@@ -660,25 +689,55 @@ const SCORE_RANGES: Record<Tier, [number, number]> = {
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
+/** The fictional dataset (used by the automated tests, and when no OSM snapshot exists). */
 export function generateDataset(referenceDate: string): Dataset {
-  const properties = PROPERTIES.map((seed) => generateProperty(seed, referenceDate));
-  return { referenceDate, destinations: DESTINATIONS, properties };
+  const properties = PROPERTIES.map((seed) => {
+    const anchor = ANCHORS[seed.anchor];
+    if (!anchor) throw new Error(`Unknown anchor ${String(seed.anchor)} for ${seed.name}`);
+    const slug = slugify(`${seed.name}-${anchor.destination}`);
+    const rng = new Rng(slug);
+    const distance = Math.sqrt(rng.next()) * anchor.jitterM; // uniform over the disc
+    const angle = rng.float(0, 2 * Math.PI);
+    const point = offsetByMetres(anchor, distance * Math.cos(angle), distance * Math.sin(angle));
+    return buildProperty({ slug, rng, seed, anchor, point, referenceDate });
+  });
+  return {
+    source: 'synthetic',
+    referenceDate,
+    destinations: DESTINATIONS,
+    properties,
+    minSpacingKm: 0.03,
+  };
 }
 
-function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedProperty {
-  const anchor = ANCHORS[seed.anchor];
-  if (!anchor) throw new Error(`Unknown anchor ${String(seed.anchor)} for ${seed.name}`);
-  const slug = slugify(`${seed.name}-${anchor.destination}`);
-  // Structural randomness is seeded from the slug only; date-relative parts use a
-  // separate generator so changing the reference date never changes prices or rooms.
-  const rng = new Rng(slug);
+/**
+ * Generates everything simulated about one property: amenities, rooms, offers,
+ * availability, score and images. Structural randomness comes from `rng` (seeded
+ * from the slug); date-relative parts use a separate generator so changing the
+ * reference date never changes prices or rooms.
+ */
+export function buildProperty(args: {
+  slug: string;
+  rng: Rng;
+  seed: PropertyBasics;
+  anchor: Anchor;
+  point: { lat: number; lng: number };
+  referenceDate: string;
+  minScore?: number;
+  /** Amenities known to exist (always included) or known to be absent (never simulated). */
+  confirmedAmenities?: string[];
+  deniedAmenities?: string[];
+}): GeneratedProperty {
+  const { slug, rng, seed, anchor, point, referenceDate } = args;
   const dateRng = new Rng(`${slug}|${referenceDate}`);
 
-  const distance = Math.sqrt(rng.next()) * anchor.jitterM; // uniform over the disc
-  const angle = rng.float(0, 2 * Math.PI);
-  const point = offsetByMetres(anchor, distance * Math.cos(angle), distance * Math.sin(angle));
-
-  const amenitySlugs = chooseAmenities(rng, seed, anchor);
+  let amenitySlugs = chooseAmenities(rng, seed, anchor);
+  if (args.confirmedAmenities || args.deniedAmenities) {
+    const denied = new Set(args.deniedAmenities ?? []);
+    if (denied.has('step-free-access')) denied.add('accessible-bathroom');
+    const wanted = new Set([...amenitySlugs, ...(args.confirmedAmenities ?? [])]);
+    amenitySlugs = AMENITIES.map((a) => a.slug).filter((s) => wanted.has(s) && !denied.has(s));
+  }
   const amenityNames = amenitySlugs.map((s) => AMENITIES.find((a) => a.slug === s)!.name);
   const { summary, description } = describe(rng, seed, anchor, amenityNames);
 
@@ -713,7 +772,8 @@ function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedP
     blocks: buildBlocks(dateRng, referenceDate),
   }));
 
-  const [minScore, maxScore] = SCORE_RANGES[seed.tier];
+  const [tierMin, maxScore] = SCORE_RANGES[seed.tier];
+  const minScore = Math.max(tierMin, args.minScore ?? 0);
   const rating = rng.chance(0.88)
     ? {
         score: Math.round(rng.float(minScore, maxScore) * 10) / 10,
@@ -774,7 +834,7 @@ function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedP
   };
 }
 
-function checkTimes(type: PropertySeed['type']) {
+function checkTimes(type: PropertyTypeSlug) {
   switch (type) {
     case 'hotel':
       return { checkInFrom: '14:00', checkInUntil: null, checkOutUntil: '11:00' };

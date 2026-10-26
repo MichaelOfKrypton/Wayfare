@@ -7,8 +7,10 @@ const SELECT_DESTINATION = `
          ST_Y(d.location::geometry) AS lat, ST_X(d.location::geometry) AS lng,
          d.search_radius_km AS "searchRadiusKm",
          (SELECT count(*)::int FROM properties p
-           WHERE ST_DWithin(p.location, d.location, d.search_radius_km * 1000)) AS "propertyCount",
-         d.summary, d.image_url AS "imageUrl"
+           WHERE ST_DWithin(p.location, d.location, d.search_radius_km * 1000, false)) AS "propertyCount",
+         d.summary, d.image_url AS "imageUrl",
+         CASE WHEN d.image_credit_url IS NULL THEN NULL
+              ELSE json_build_object('text', d.image_credit, 'url', d.image_credit_url) END AS "imageCredit"
   FROM destinations d
   LEFT JOIN destinations parent ON parent.id = d.parent_id`;
 

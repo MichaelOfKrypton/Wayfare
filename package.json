@@ -30,7 +30,9 @@
     "test:unit": "vitest run --project unit --project unit-web",
     "test:integration": "vitest run --project integration",
     "test:e2e": "playwright test",
-    "images": "node apps/web/scripts/generate-demo-images.mjs"
+    "images": "node apps/web/scripts/generate-demo-images.mjs",
+    "data:fetch-osm": "npm run data:fetch-osm -w @wayfare/api",
+    "loadtest": "node scripts/loadtest.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

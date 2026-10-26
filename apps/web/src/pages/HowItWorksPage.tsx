@@ -17,16 +17,29 @@ export function HowItWorksPage() {
       </header>
 
       <section aria-labelledby="data">
-        <h2 id="data">The data is synthetic</h2>
+        <h2 id="data">What is real and what is simulated</h2>
         <ul>
           <li>
-            The <strong>91 properties</strong> and <strong>5 booking providers</strong> are
-            fictional. Their names were invented for this demo, and any resemblance to a real
-            business is coincidental.
+            <strong>Real:</strong> property names, locations, types, star ratings, websites and
+            phone numbers come from{' '}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              OpenStreetMap
+            </a>{' '}
+            (© OpenStreetMap contributors, ODbL). Each real property links to its own website and
+            its OpenStreetMap entry. Amenities marked “confirmed” come from OpenStreetMap too.
           </li>
           <li>
-            Locations are real South African towns, suburbs and landmarks, but property coordinates
-            are approximate points placed nearby.
+            Wayfare isn’t affiliated with any of these places. Without an OpenStreetMap snapshot,
+            the app falls back to a set of <strong>fictional properties</strong>, which are labelled
+            “Fictional demo property”.
+          </li>
+          <li>
+            The <strong>5 booking providers</strong> are fictional, and the room types and other
+            amenities are simulated.
           </li>
           <li>
             Every offer is <strong>simulated</strong>. Prices, availability and “generated” times
@@ -39,8 +52,9 @@ export function HowItWorksPage() {
             comments.
           </li>
           <li>
-            All images are original illustrations generated for this project, not photographs of
-            real places.
+            Photos come from Wikimedia Commons under free licences, and each one is credited. Every
+            other image is an original illustration made for this project, labelled “Illustration”,
+            and isn’t a photograph of the place.
           </li>
         </ul>
       </section>

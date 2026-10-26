@@ -34,8 +34,10 @@ async function main(): Promise<void> {
       log(applied.length ? `${applied.length} migration(s) applied` : 'schema up to date');
     }
     if (command === 'seed' || command === 'reset') {
-      const summary = await seed(pool, referenceDate);
-      log(`seeded synthetic dataset (reference date ${summary.referenceDate})`);
+      const summary = await seed(pool, referenceDate, { dataset: config.SEED_DATASET });
+      log(
+        `seeded ${summary.source === 'osm' ? 'real OpenStreetMap places' : 'synthetic'} dataset (reference date ${summary.referenceDate})`,
+      );
       for (const [table, n] of Object.entries(summary.counts)) log(`  ${table.padEnd(26)} ${n}`);
     }
   } catch (error) {

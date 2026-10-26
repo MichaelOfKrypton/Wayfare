@@ -18,9 +18,11 @@ export async function findPropertyBySlug(pool: Pool, slug: string): Promise<Prop
             json_build_object('from', to_char(p.check_in_from, 'HH24:MI'),
                               'until', to_char(p.check_in_until, 'HH24:MI')) AS "checkIn",
             json_build_object('until', to_char(p.check_out_until, 'HH24:MI')) AS "checkOut",
-            (SELECT coalesce(json_agg(json_build_object('url', i.url, 'alt', i.alt_text) ORDER BY i.sort_order), '[]'::json)
+            (SELECT coalesce(json_agg(json_build_object('url', i.url, 'alt', i.alt_text, 'credit', CASE WHEN i.credit_url IS NULL THEN NULL ELSE i.credit END,
+                                                'creditUrl', i.credit_url) ORDER BY i.sort_order), '[]'::json)
                FROM property_images i WHERE i.property_id = p.id) AS images,
-            (SELECT coalesce(json_agg(json_build_object('slug', a.slug, 'name', a.name, 'category', a.category)
+            (SELECT coalesce(json_agg(json_build_object('slug', a.slug, 'name', a.name, 'category', a.category,
+                                                'verified', pa.is_verified)
                                       ORDER BY a.sort_order), '[]'::json)
                FROM property_amenities pa JOIN amenities a ON a.id = pa.amenity_id
               WHERE pa.property_id = p.id) AS amenities,
@@ -36,7 +38,11 @@ export async function findPropertyBySlug(pool: Pool, slug: string): Promise<Prop
                FROM provider_listings pl JOIN providers pr ON pr.id = pl.provider_id
               WHERE pl.property_id = p.id) AS providers,
             json_build_object('code', ds.code, 'name', ds.name, 'kind', ds.kind) AS "dataSource",
-            p.is_demo AS "isDemo"
+            p.is_demo AS "isDemo",
+            CASE WHEN p.osm_id IS NULL THEN NULL
+                 ELSE json_build_object('websiteUrl', p.website_url, 'phone', p.phone, 'stars', p.stars,
+                                        'osmUrl', 'https://www.openstreetmap.org/' || p.osm_type || '/' || p.osm_id)
+            END AS "realPlace"
      FROM properties p
      JOIN property_types pt ON pt.id = p.property_type_id
      JOIN destinations d ON d.id = p.destination_id

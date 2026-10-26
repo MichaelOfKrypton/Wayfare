@@ -7,7 +7,7 @@ import { Skeleton } from '../components/States';
 import { SearchForm } from '../features/search/SearchForm';
 import { geolocationMessage, requestCurrentPosition } from '../lib/geolocation';
 import { useDocumentTitle } from '../lib/hooks';
-import { useFeaturedDestinations } from '../lib/queries';
+import { useFeaturedDestinations, useFilters } from '../lib/queries';
 import { defaultStay } from '../lib/searchState';
 import styles from './HomePage.module.css';
 
@@ -16,6 +16,7 @@ export function HomePage() {
   const navigate = useNavigate();
   const stay = defaultStay();
   const featured = useFeaturedDestinations();
+  const realPlaces = (useFilters().data?.dataSummary.realPropertyCount ?? 0) > 0;
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string>();
 
@@ -120,6 +121,17 @@ export function HomePage() {
                   {d.summary && <span className={styles.destinationSummary}>{d.summary}</span>}
                 </span>
               </Link>
+              {d.imageCredit && (
+                <a
+                  className={styles.destinationCredit}
+                  title={d.imageCredit.text}
+                  href={d.imageCredit.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Photo: {d.imageCredit.text}
+                </a>
+              )}
             </li>
           ))}
         </ul>
@@ -158,8 +170,11 @@ export function HomePage() {
           </article>
         </div>
         <p className={styles.disclosure}>
-          Wayfare is a portfolio demonstration. Its properties and providers are fictional and its
-          prices are simulated. <Link to="/how-it-works">Read how the data and rankings work.</Link>
+          Wayfare is a portfolio demonstration.{' '}
+          {realPlaces
+            ? 'Its places come from OpenStreetMap, but its providers and prices are simulated.'
+            : 'Its properties and providers are fictional and its prices are simulated.'}{' '}
+          <Link to="/how-it-works">Read how the data and rankings work.</Link>
         </p>
       </section>
     </>

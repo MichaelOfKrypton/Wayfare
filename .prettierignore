@@ -5,3 +5,6 @@ playwright-report
 test-results
 package-lock.json
 apps/web/public/images
+
+# Generated OpenStreetMap snapshot (one place per line for readable diffs)
+apps/api/seed/data/osm-snapshot.json

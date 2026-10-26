@@ -23,7 +23,11 @@ Arrays are comma-separated: `types=guesthouse,lodge&amenities=wifi,pool`. Unknow
 
 ### Limits
 
-Unknown query parameters are rejected (400). This catches typos like `maxPrise`. Rate limit: 300 requests per minute per IP (local default).
+Unknown query parameters are rejected (400). This catches typos like `maxPrise`. Rate limit: 300 requests per minute per IP (local default, `RATE_LIMIT_PER_MINUTE`).
+
+### Caching
+
+Read responses carry an `ETag` and `Cache-Control` (`max-age=300` for filters and destinations, `max-age=30` for everything else). A request with a matching `If-None-Match` gets `304 Not Modified` with no body. Errors and health checks are `no-store`. Bodies over 1 kB are Brotli- or gzip-compressed when the client sends `Accept-Encoding`. The server shares one cached result between identical requests for `API_CACHE_TTL_MS` (default 30 s).
 
 ## 2. Error format
 
@@ -204,15 +208,26 @@ Property details (no prices). Returns 404 if the slug is unknown.
   "destination": { "slug": "knysna", "name": "Knysna", "province": "Western Cape" },
   "suburb": "Paradise", "streetAddress": "…", "lat": -34.03, "lng": 23.05,
   "checkIn": { "from": "14:00", "until": "20:00" }, "checkOut": { "until": "10:00" },
-  "images": [{ "url": "…", "alt": "…" }],
-  "amenities": [{ "slug": "wifi", "name": "Wi-Fi", "category": "essentials" }],
+  "images": [{ "url": "…", "alt": "…", "credit": "A. Author · CC BY-SA 4.0 · Wikimedia Commons" | null, "creditUrl": "https://commons.wikimedia.org/wiki/File:…" | null }],
+  "amenities": [{ "slug": "wifi", "name": "Wi-Fi", "category": "essentials", "verified": true }],
   "roomTypes": [{ "id": 40, "name": "Garden Suite", "maxGuests": 2, "bedrooms": 1, "bathrooms": 1, "beds": "1 queen bed", "description": "…" }],
   "rating": {…} | null,
   "providers": [{ "slug": "kopano-stays", "name": "Kopano Stays", "kind": "ota" }],
   "dataSource": { "code": "synthetic-demo", "name": "Wayfare synthetic dataset", "kind": "synthetic" },
-  "isDemo": true
+  "isDemo": false,
+  "realPlace": {
+    "websiteUrl": "https://example.co.za/" | null,
+    "phone": "+27 21 555 0100" | null,
+    "stars": 4 | null,
+    "osmUrl": "https://www.openstreetmap.org/node/123456"
+  } | null
 }
 ```
+
+- `isDemo` is `true` for fictional properties, and `realPlace` is then `null`.
+- `verified` amenities are confirmed by OpenStreetMap tags; the others are simulated.
+- `credit`/`creditUrl` are set for third-party photos and `null` for Wayfare's own illustrations.
+- Search results' `coverImage` and destinations' `imageCredit` (`{ "text", "url" } | null`) follow the same rule.
 
 ### `GET /api/properties/:slug/offers`
 

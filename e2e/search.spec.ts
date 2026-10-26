@@ -4,7 +4,7 @@ test.describe('home and search', () => {
   test('homepage renders with demo disclosure and featured destinations', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Find tonight');
-    await expect(page.getByRole('note')).toContainText('synthetic');
+    await expect(page.getByRole('note')).toContainText('simulated');
     await expect(page.getByRole('link', { name: /Cape Town/ }).first()).toBeVisible();
   });
 

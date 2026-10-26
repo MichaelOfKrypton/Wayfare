@@ -1,15 +1,35 @@
 /**
- * Inserts the synthetic dataset. Everything happens in one transaction using
+ * Inserts the seed dataset: real OpenStreetMap places (when a snapshot exists)
+ * or the fictional set. Everything happens in one transaction using
  * set-based `INSERT … SELECT FROM jsonb_to_recordset(...)`, so the seed is
  * fast, atomic and keeps identity values in a deterministic order.
  */
 import type { PoolClient } from 'pg';
 import type { Pool } from '../src/db/pool';
-import { AMENITIES, DATA_SOURCE, PROPERTY_TYPES, PROVIDERS } from './data/catalog';
+import { AMENITIES, DATA_SOURCE, OSM_DATA_SOURCE, PROPERTY_TYPES, PROVIDERS } from './data/catalog';
 import { generateDataset, type Dataset } from './generate';
+import { buildOsmDataset } from './osm/dataset';
+import { hasSnapshot, loadSnapshot } from './osm/snapshot';
 import { validateDataset } from './validate';
 
+export interface SeedOptions {
+  /** 'synthetic' (default, used by tests), 'osm' (requires the snapshot) or 'auto'. */
+  dataset?: 'auto' | 'osm' | 'synthetic';
+}
+
+export function chooseDataset(referenceDate: string, options: SeedOptions = {}): Dataset {
+  const wanted = options.dataset ?? 'synthetic';
+  if (wanted === 'osm' && !hasSnapshot()) {
+    throw new Error('SEED_DATASET=osm but no snapshot exists. Run: npm run data:fetch-osm');
+  }
+  if (wanted === 'osm' || (wanted === 'auto' && hasSnapshot())) {
+    return buildOsmDataset(loadSnapshot(), referenceDate);
+  }
+  return generateDataset(referenceDate);
+}
+
 export interface SeedSummary {
+  source: Dataset['source'];
   referenceDate: string;
   counts: Record<string, number>;
 }
@@ -30,8 +50,12 @@ const TABLES = [
   'data_sources',
 ];
 
-export async function seed(pool: Pool, referenceDate: string): Promise<SeedSummary> {
-  const dataset = generateDataset(referenceDate);
+export async function seed(
+  pool: Pool,
+  referenceDate: string,
+  options: SeedOptions = {},
+): Promise<SeedSummary> {
+  const dataset = chooseDataset(referenceDate, options);
   validateDataset(dataset);
 
   const client = await pool.connect();
@@ -49,12 +73,16 @@ export async function seed(pool: Pool, referenceDate: string): Promise<SeedSumma
     client.release();
   }
 
+  // Fresh tables have no planner statistics; without them PostgreSQL guesses
+  // single-row results and picks slow nested-loop plans for search.
+  await pool.query(`ANALYZE ${TABLES.join(', ')}`);
+
   const counts: Record<string, number> = {};
   for (const table of [...TABLES].reverse()) {
     const { rows } = await pool.query<{ n: number }>(`SELECT count(*)::int AS n FROM ${table}`);
     counts[table] = rows[0]!.n;
   }
-  return { referenceDate, counts };
+  return { source: dataset.source, referenceDate, counts };
 }
 
 /** Sends rows as one JSON parameter; `ord` preserves array order for deterministic identities. */
@@ -63,9 +91,12 @@ async function insertJson(client: PoolClient, sql: string, rows: object[]): Prom
 }
 
 async function insertCatalog(client: PoolClient): Promise<void> {
-  await client.query(
-    `INSERT INTO data_sources (code, name, kind, description) VALUES ($1, $2, $3, $4)`,
-    [DATA_SOURCE.code, DATA_SOURCE.name, DATA_SOURCE.kind, DATA_SOURCE.description],
+  await insertJson(
+    client,
+    `INSERT INTO data_sources (code, name, kind, description)
+     SELECT code, name, kind, description FROM jsonb_to_recordset($1::jsonb)
+       AS t(code text, name text, kind text, description text, ord int) ORDER BY ord`,
+    [DATA_SOURCE, OSM_DATA_SOURCE],
   );
   await insertJson(
     client,
@@ -94,14 +125,18 @@ async function insertCatalog(client: PoolClient): Promise<void> {
 async function insertDestinations(client: PoolClient, dataset: Dataset): Promise<void> {
   await insertJson(
     client,
-    `INSERT INTO destinations (slug, name, kind, province, location, search_radius_km, is_featured, sort_order, summary, image_url)
+    `INSERT INTO destinations (slug, name, kind, province, location, search_radius_km, is_featured, sort_order,
+                               summary, image_url, image_credit, image_credit_url)
      SELECT slug, name, kind, province,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
             "radiusKm", coalesce(featured, false), ord, summary,
-            CASE WHEN theme IS NULL THEN NULL ELSE '/images/demo/' || theme || '-' || (ord % 6 + 1) || '.svg' END
+            CASE WHEN photo IS NOT NULL THEN photo->>'url'
+                 WHEN theme IS NULL THEN NULL
+                 ELSE '/images/demo/' || theme || '-' || (ord % 6 + 1) || '.svg' END,
+            photo->>'credit', photo->>'creditUrl'
      FROM jsonb_to_recordset($1::jsonb)
        AS t(slug text, name text, kind text, province text, lat float8, lng float8,
-            "radiusKm" numeric, featured boolean, summary text, theme text, ord int)
+            "radiusKm" numeric, featured boolean, summary text, theme text, photo jsonb, ord int)
      ORDER BY ord`,
     dataset.destinations,
   );
@@ -120,15 +155,21 @@ async function insertProperties(client: PoolClient, dataset: Dataset): Promise<v
 
   await insertJson(
     client,
-    `INSERT INTO properties (slug, name, property_type_id, destination_id, suburb, location, summary,
-                             description, check_in_from, check_in_until, check_out_until, is_demo, data_source_id)
-     SELECT t.slug, t.name, pt.id, d.id, t.suburb,
+    `INSERT INTO properties (slug, name, property_type_id, destination_id, suburb, street_address, location,
+                             summary, description, check_in_from, check_in_until, check_out_until, is_demo,
+                             data_source_id, osm_type, osm_id, website_url, phone, stars)
+     SELECT t.slug, t.name, pt.id, d.id, t.suburb, t.real->>'streetAddress',
             ST_SetSRID(ST_MakePoint(t.lng, t.lat), 4326)::geography,
             t.summary, t.description, t."checkInFrom"::time, t."checkInUntil"::time, t."checkOutUntil"::time,
-            true, (SELECT id FROM data_sources WHERE code = 'synthetic-demo')
+            t.real IS NULL,
+            (SELECT id FROM data_sources
+              WHERE code = CASE WHEN t.real IS NULL THEN 'synthetic-demo' ELSE 'openstreetmap' END),
+            t.real->>'osmType', (t.real->>'osmId')::bigint, t.real->>'websiteUrl', t.real->>'phone',
+            (t.real->>'stars')::smallint
      FROM jsonb_to_recordset($1::jsonb)
        AS t(slug text, name text, "typeSlug" text, "destinationSlug" text, suburb text, lat float8, lng float8,
-            summary text, description text, "checkInFrom" text, "checkInUntil" text, "checkOutUntil" text, ord int)
+            summary text, description text, "checkInFrom" text, "checkInUntil" text, "checkOutUntil" text,
+            real jsonb, ord int)
      JOIN property_types pt ON pt.slug = t."typeSlug"
      JOIN destinations d ON d.slug = t."destinationSlug"
      ORDER BY t.ord`,
@@ -147,20 +188,28 @@ async function insertProperties(client: PoolClient, dataset: Dataset): Promise<v
 
   await insertJson(
     client,
-    `INSERT INTO property_images (property_id, url, alt_text, credit, sort_order)
-     SELECT p.id, t.url, t.alt, 'Original illustration (Wayfare demo)', t.position
+    `INSERT INTO property_images (property_id, url, alt_text, credit, credit_url, licence, sort_order)
+     SELECT p.id, t.url, t.alt, coalesce(t.credit, 'Original illustration (Wayfare demo)'),
+            t."creditUrl", t.licence, t.position
      FROM jsonb_to_recordset($1::jsonb)
-       AS t(slug text, url text, alt text, position int, ord int)
+       AS t(slug text, url text, alt text, credit text, "creditUrl" text, licence text, position int, ord int)
      JOIN properties p ON p.slug = t.slug ORDER BY t.ord`,
     props.flatMap((p) => p.images.map((img, position) => ({ slug: p.slug, ...img, position }))),
   );
 
   await insertJson(
     client,
-    `INSERT INTO property_amenities (property_id, amenity_id)
-     SELECT p.id, a.id FROM jsonb_to_recordset($1::jsonb) AS t(slug text, amenity text)
+    `INSERT INTO property_amenities (property_id, amenity_id, is_verified)
+     SELECT p.id, a.id, t.verified
+     FROM jsonb_to_recordset($1::jsonb) AS t(slug text, amenity text, verified boolean)
      JOIN properties p ON p.slug = t.slug JOIN amenities a ON a.slug = t.amenity`,
-    props.flatMap((p) => p.amenitySlugs.map((amenity) => ({ slug: p.slug, amenity }))),
+    props.flatMap((p) =>
+      p.amenitySlugs.map((amenity) => ({
+        slug: p.slug,
+        amenity,
+        verified: p.real?.confirmedAmenitySlugs.includes(amenity) ?? false,
+      })),
+    ),
   );
 
   await insertJson(

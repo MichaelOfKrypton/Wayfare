@@ -35,6 +35,9 @@ export interface RatingSummary {
 export interface ImageRef {
   url: string;
   alt: string;
+  /** Set for third-party photos (e.g. Wikimedia Commons); absent for Wayfare's own illustrations. */
+  credit?: string | null;
+  creditUrl?: string | null;
 }
 
 export interface NamedSlug {
@@ -56,6 +59,8 @@ export interface Destination {
   propertyCount: number;
   summary: string | null;
   imageUrl: string | null;
+  /** Photographer and licence, when `imageUrl` is a third-party photo. */
+  imageCredit?: { text: string; url: string } | null;
 }
 
 export interface DestinationsResponse {
@@ -69,6 +74,8 @@ export interface FiltersResponse {
   amenities: (NamedSlug & { category: AmenityCategory; isEssential: boolean })[];
   priceBounds: { minNightlyCents: number; maxNightlyCents: number; currency: 'ZAR' };
   sortOptions: SortOption[];
+  /** What the loaded dataset contains, so the UI can describe it accurately. */
+  dataSummary: { realPropertyCount: number; demoPropertyCount: number };
 }
 
 // ---------- Search ----------
@@ -172,12 +179,21 @@ export interface PropertyDetail {
   checkIn: { from: string | null; until: string | null };
   checkOut: { until: string | null };
   images: ImageRef[];
-  amenities: (NamedSlug & { category: AmenityCategory })[];
+  /** `verified` amenities are confirmed by OpenStreetMap; the rest are simulated. */
+  amenities: (NamedSlug & { category: AmenityCategory; verified: boolean })[];
   roomTypes: RoomType[];
   rating: RatingSummary | null;
   providers: ProviderRef[];
   dataSource: { code: string; name: string; kind: string };
+  /** True for fictional properties; false for real places from OpenStreetMap. */
   isDemo: boolean;
+  /** Facts about a real place (null for fictional properties). */
+  realPlace: {
+    websiteUrl: string | null;
+    phone: string | null;
+    stars: number | null;
+    osmUrl: string;
+  } | null;
 }
 
 // ---------- Offers ----------

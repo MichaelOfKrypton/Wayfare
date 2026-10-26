@@ -78,3 +78,17 @@ describe('quote_stay (SQL) ↔ calculateStayPrice (TypeScript)', () => {
     expect(rows).toHaveLength(0);
   });
 });
+
+describe('quote_stay weekend arithmetic', () => {
+  it('counts Friday and Saturday nights exactly for every start day and 1–30 nights', async () => {
+    const { rows } = await ctx.pool.query<{ mismatches: number }>(`
+      SELECT count(*)::int AS mismatches
+      FROM generate_series(DATE '2026-11-02', DATE '2026-11-08', '1 day') ci,
+           generate_series(1, 30) n,
+           LATERAL quote_stay(100, 200, 0, 0, true, ci::date, (ci + n * interval '1 day')::date) q
+      WHERE q.weekend_nights <> (
+        SELECT count(*) FROM generate_series(ci, ci + (n - 1) * interval '1 day', '1 day') d
+        WHERE extract(isodow FROM d) IN (5, 6))`);
+    expect(rows[0]!.mismatches).toBe(0);
+  });
+});

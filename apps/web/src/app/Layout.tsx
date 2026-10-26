@@ -1,10 +1,13 @@
 import { FlaskConical } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
+import { useFilters } from '../lib/queries';
 import styles from './Layout.module.css';
 
 export function Layout() {
   const location = useLocation();
+  // Describe the data that is actually loaded: real OSM places, or the fictional set.
+  const realPlaces = (useFilters().data?.dataSummary.realPropertyCount ?? 0) > 0;
   const isSearch = location.pathname === '/search';
 
   // Move focus to the main landmark on client-side navigation so screen-reader users hear
@@ -27,15 +30,18 @@ export function Layout() {
           <Link to="/" className={styles.brand} aria-label="Wayfare home">
             <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
               <rect width="64" height="64" rx="14" fill="currentColor" />
+              <circle cx="32" cy="32" r="21" fill="none" stroke="#0b1f35" strokeWidth="3.5" />
               <path
-                d="M14 20 L22 46 L32 26 L42 46 L50 20"
-                fill="none"
+                d="M32 14.5v4.5M32 45v4.5M14.5 32h4.5M45 32h4.5"
                 stroke="#0b1f35"
-                strokeWidth="5"
+                strokeWidth="3"
                 strokeLinecap="round"
-                strokeLinejoin="round"
               />
-              <circle cx="50" cy="14" r="5" fill="#e08a4f" />
+              <g transform="rotate(40 32 32)">
+                <path d="M32 15.5 L37.5 32 L26.5 32 Z" fill="#e08a4f" />
+                <path d="M32 48.5 L37.5 32 L26.5 32 Z" fill="#0b1f35" />
+              </g>
+              <circle cx="32" cy="32" r="2.5" fill="currentColor" />
             </svg>
             <span className={styles.wordmark}>Wayfare</span>
           </Link>
@@ -60,9 +66,11 @@ export function Layout() {
         <div className={`${styles.noticeInner} ${isSearch ? styles.wide : ''}`}>
           <FlaskConical size={16} aria-hidden="true" />
           <p>
-            <strong>Portfolio demo.</strong> All properties, providers, prices and scores are
-            synthetic. Nothing here can be booked.{' '}
-            <Link to="/how-it-works">How the data works</Link>
+            <strong>Portfolio demo.</strong>{' '}
+            {realPlaces
+              ? 'Places come from OpenStreetMap, but providers, prices, availability and scores are simulated.'
+              : 'All properties, providers, prices and scores are simulated.'}{' '}
+            Nothing here can be booked. <Link to="/how-it-works">How the data works</Link>
           </p>
         </div>
       </div>
@@ -85,9 +93,9 @@ export function Layout() {
               <div>
                 <p className={styles.footerHeading}>About the data</p>
                 <p className={styles.footerText}>
-                  Properties and providers are fictional. Prices, availability and scores are
-                  simulated. Illustrations are original artwork. Map data © OpenStreetMap
-                  contributors.
+                  {realPlaces
+                    ? 'Place names, locations and websites © OpenStreetMap contributors (ODbL). Photos from Wikimedia Commons are credited where shown. Providers, prices, availability and scores are simulated, and other images are original illustrations.'
+                    : 'Properties and providers are fictional. Prices, availability and scores are simulated. Illustrations are original artwork. Map data © OpenStreetMap contributors.'}
                 </p>
               </div>
             </div>

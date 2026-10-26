@@ -1,3 +1,4 @@
+import { brotliDecompressSync } from 'node:zlib';
 import type { ApiErrorBody, DestinationsResponse, FiltersResponse } from '@wayfare/shared';
 import { describe, expect, it } from 'vitest';
 import { getJson, useTestApp } from './helpers';
@@ -80,5 +81,62 @@ describe('errors and headers', () => {
     const response = await ctx.app.inject({ method: 'GET', url: "/api/properties/x'--" });
     expect(response.statusCode).toBe(400);
     expect(response.body).not.toMatch(/SELECT|syntax|stack/i);
+  });
+});
+
+describe('caching and compression', () => {
+  it('sets cache headers on reads and no-store on errors and health', async () => {
+    const filters = await ctx.app.inject({ method: 'GET', url: '/api/filters' });
+    expect(filters.headers['cache-control']).toMatch(/max-age=300/);
+    const qs = new URLSearchParams(ctx.stay(3, 2)).toString();
+    const search = await ctx.app.inject({ method: 'GET', url: `/api/search?${qs}` });
+    expect(search.headers['cache-control']).toMatch(/max-age=30/);
+    const health = await ctx.app.inject({ method: 'GET', url: '/api/health' });
+    expect(health.headers['cache-control']).toBe('no-store');
+    const bad = await ctx.app.inject({ method: 'GET', url: '/api/search?page=-1' });
+    expect(bad.statusCode).toBe(400);
+    expect(bad.headers['cache-control']).toBe('no-store');
+  });
+
+  it('compresses large responses when the client accepts it', async () => {
+    const res = await ctx.app.inject({
+      method: 'GET',
+      url: `/api/search?${new URLSearchParams(ctx.stay(3, 2)).toString()}`,
+      headers: { 'accept-encoding': 'br, gzip' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-encoding']).toBe('br');
+    // Exactly one layer of compression, decoding to the same JSON as an uncompressed request.
+    const decoded = JSON.parse(brotliDecompressSync(res.rawPayload).toString('utf8'));
+    const plain = await ctx.app.inject({ method: 'GET', url: res.raw.req.url });
+    expect(decoded).toEqual(plain.json());
+  });
+
+  it('answers a matching If-None-Match with 304 and no body', async () => {
+    const first = await ctx.app.inject({ method: 'GET', url: '/api/filters' });
+    const etag = first.headers.etag as string;
+    expect(etag).toMatch(/^"[\w-]+"$/);
+    const again = await ctx.app.inject({
+      method: 'GET',
+      url: '/api/filters',
+      headers: { 'if-none-match': etag },
+    });
+    expect(again.statusCode).toBe(304);
+    expect(again.body).toBe('');
+  });
+
+  it('returns identical results for repeated requests', async () => {
+    const query = { destination: 'cape-town', ...ctx.stay(3, 2) };
+    const a = await getJson(ctx.app, '/api/search', query);
+    const b = await getJson(ctx.app, '/api/search', query);
+    expect(a.status).toBe(200);
+    expect(b.body).toEqual(a.body);
+  });
+});
+
+describe('dataset summary', () => {
+  it('reports how many real and fictional properties are loaded', async () => {
+    const { body } = await getJson<FiltersResponse>(ctx.app, '/api/filters');
+    expect(body.dataSummary).toEqual({ realPropertyCount: 0, demoPropertyCount: 91 });
   });
 });

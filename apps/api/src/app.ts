@@ -1,3 +1,5 @@
+import zlib from 'node:zlib';
+import compress from '@fastify/compress';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -5,6 +7,7 @@ import type { ApiErrorBody } from '@wayfare/shared';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import type { AppConfig } from './config';
 import type { Pool } from './db/pool';
+import { createResponseCache, type ResponseCache } from './lib/cache';
 import { systemClock, type Clock } from './lib/clock';
 import { AppError, ServiceUnavailableError } from './lib/errors';
 import { destinationRoutes } from './modules/destinations/destinations.routes';
@@ -16,6 +19,7 @@ import { searchRoutes } from './modules/search/search.routes';
 export interface AppDeps {
   pool: Pool;
   clock: Clock;
+  cache: ResponseCache;
 }
 
 export interface BuildAppOptions {
@@ -24,7 +28,16 @@ export interface BuildAppOptions {
   clock?: Clock;
   /** Requests per minute per IP; 0 disables rate limiting (used by tests). */
   rateLimitPerMinute?: number;
+  /** How long identical read requests share one result; 0 disables the cache. */
+  cacheTtlMs?: number;
 }
+
+/** Browser/proxy caching for read endpoints. The data changes only when re-seeded. */
+const CACHE_CONTROL: [RegExp, string][] = [
+  [/^\/api\/health/, 'no-store'],
+  [/^\/api\/(filters|destinations)/, 'public, max-age=300, stale-while-revalidate=600'],
+  [/^\/api\//, 'public, max-age=30, stale-while-revalidate=60'],
+];
 
 const DB_UNAVAILABLE_CODES = new Set([
   'ECONNREFUSED',
@@ -37,7 +50,11 @@ const DB_UNAVAILABLE_CODES = new Set([
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const { config, pool } = options;
-  const deps: AppDeps = { pool, clock: options.clock ?? systemClock };
+  const deps: AppDeps = {
+    pool,
+    clock: options.clock ?? systemClock,
+    cache: createResponseCache({ ttlMs: options.cacheTtlMs ?? 30_000 }),
+  };
 
   const logger: FastifyServerOptions['logger'] =
     config.NODE_ENV === 'test'
@@ -60,6 +77,27 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
     contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
   });
   await app.register(cors, { origin: config.CORS_ORIGIN, methods: ['GET'] });
+  // Search responses carry up to 500 map points; Brotli/gzip cut them by roughly 85%.
+  // Brotli's default (quality 11) is tuned for static files; level 4 is ~20x faster and
+  // nearly as small, which matters for per-request JSON.
+  await app.register(compress, {
+    global: true,
+    threshold: 1024,
+    encodings: ['br', 'gzip'],
+    brotliOptions: { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 4 } },
+    zlibOptions: { level: 5 },
+  });
+
+  app.addHook('onSend', async (request, reply, payload) => {
+    if (request.method === 'GET' && reply.statusCode === 200 && !reply.hasHeader('cache-control')) {
+      const path = request.url.split('?')[0]!;
+      const rule = CACHE_CONTROL.find(([pattern]) => pattern.test(path));
+      if (rule) reply.header('cache-control', rule[1]);
+    } else if (reply.statusCode >= 400) {
+      reply.header('cache-control', 'no-store');
+    }
+    return payload;
+  });
   if ((options.rateLimitPerMinute ?? 300) > 0) {
     await app.register(rateLimit, {
       max: options.rateLimitPerMinute ?? 300,

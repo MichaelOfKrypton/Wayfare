@@ -106,23 +106,21 @@ sequenceDiagram
   W->>A: GET /api/search?destination=knysna&checkIn=…&guests=2&…
   A->>A: Zod parse → validate dates vs SAST today
   A->>D: resolve destination → point + default radius
-  par page query
-    A->>D: CTE: candidates → eligible offers (quote_stay, availability) → best offer per property → filters → rank → LIMIT/OFFSET
-  and map query
-    A->>D: same CTE → id, lat, lng, nightly (capped 500)
-  end
-  A-->>W: { items, pagination, mapPoints, reference }
+  A->>A: response cache hit? → send cached, pre-compressed bytes (no query)
+  A->>D: one statement: candidates → eligible offers (quote_stay, availability) → best offer per property → filters → rank → page rows + map points (capped 500)
+  A-->>W: { items, pagination, mapPoints, reference } (ETag, Cache-Control)
   W->>U: cards + markers (TanStack Query cache)
 ```
 
 **The search pipeline in SQL** (one statement; `apps/api/src/modules/search/search.repository.ts`):
 
+0. **booked_rooms**: every room type with an availability block overlapping `[checkIn, checkOut)`, found in one GiST range scan.
 1. **candidates**: properties inside the radius (`ST_DWithin` on a GiST-indexed geography), matching type, amenities (all-of), score and name filters.
-2. **eligible_offers**: active offers for candidates where the room fits the guests and minimum bedrooms, the stay meets `min_nights`, the room is not blocked over `[checkIn, checkOut)`, and the policy matches if free cancellation is required. Each one is priced by `quote_stay` through a `LATERAL` join.
+2. **eligible_offers**: active offers for candidates where the room fits the guests and minimum bedrooms, the stay meets `min_nights`, the room is not in `booked_rooms`, and the policy matches if free cancellation is required. Each one is priced by `quote_stay` through a `LATERAL` join.
 3. **per_property**: the cheapest eligible offer per property (`DISTINCT ON`), plus offer and provider counts.
 4. **filtered**: the nightly-price range is applied to `total / nights`.
 5. **ranked**: the recommended score is computed with `percent_rank()` window functions, along with `count(*) OVER ()` for pagination.
-6. **The final SELECT** orders by the chosen sort with `id` as the tie-breaker, applies LIMIT/OFFSET, and pulls the cover image and the top amenities through correlated subqueries. This covers the page's rows only, so there is no N+1.
+6. **The final SELECT** orders by the chosen sort with `id` as the tie-breaker, applies LIMIT/OFFSET, and pulls the cover image and the top amenities through correlated subqueries. This covers the page's rows only, so there is no N+1. The same ranked rows also feed the map points, so offers are priced once per search.
 
 ## 7. Map interaction flow
 

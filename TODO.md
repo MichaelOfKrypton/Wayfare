@@ -124,6 +124,23 @@ A box is ticked only after the stated verification has been run. Last updated: 2
 - ⏸ CI workflow (GitHub Actions with a PostGIS service container)
 - ⏸ Route-level code splitting (low value at the current bundle size)
 
+## 16. Real places, scale and hardening (Phase 15)
+
+- [x] OpenStreetMap fetch script: resumable, polite to public servers, free-licence photos only
+- [x] Tag normalisation with safe website/phone/name handling (unit-tested, incl. `javascript:` links)
+- [x] Real-place dataset builder: dedupe, spacing, destination assignment, honest descriptions (unit-tested)
+- [x] Migration `002_real_places.sql` with `CHECK`s on website, phone, stars and OSM ids (integration-tested)
+- [x] API exposes `realPlace`, photo credits and verified amenities; UI shows website, phone, OSM link and credits
+- [x] Wording updated: real places vs simulated prices, providers and scores
+- [x] OpenStreetMap snapshot (2,029 places → 1,742 after cleaning) loaded by `npm run db:reset`; pages checked in a browser
+- [x] Search tuned for 19x data: one statement, arithmetic `quote_stay` (migration 003), booked rooms found once, `ANALYZE` after seed (`docs/PERFORMANCE.md` §1)
+- [x] Response cache with request coalescing, pre-compressed bodies, ETag/304, `Cache-Control` (tested)
+- [x] Multi-process mode (`API_WORKERS`), configurable pool and rate limit
+- [x] Load test on real data: 2,000 concurrent connections, 0 errors, 4,891 req/s with 4 workers (`docs/PERFORMANCE.md` §3)
+- [x] README screenshots retaken with real data and the compass logo
+- [x] Web app security headers (CSP without inline scripts, Permissions-Policy, COOP)
+- [x] `npm audit --omit=dev`: 0 vulnerabilities
+
 ## Blockers
 
 - None. The two open items need the owner: a manual geolocation check, and approval to push.

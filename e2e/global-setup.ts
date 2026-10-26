@@ -8,6 +8,12 @@ export default function globalSetup(): void {
   }
   execSync('npm run db:reset -w @wayfare/api', {
     stdio: 'inherit',
-    env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL, SEED_REFERENCE_DATE: '' },
+    // Always the fictional dataset: the tests assert on its fixed properties.
+    env: {
+      ...process.env,
+      DATABASE_URL: TEST_DATABASE_URL,
+      SEED_REFERENCE_DATE: '',
+      SEED_DATASET: 'synthetic',
+    },
   });
 }

@@ -10,7 +10,18 @@ import {
   type AmenityCategory,
   type PropertyDetail,
 } from '@wayfare/shared';
-import { ArrowLeft, BedDouble, Check, Clock, Database, MapPin, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  BedDouble,
+  Check,
+  Clock,
+  Database,
+  ExternalLink,
+  Globe,
+  MapPin,
+  Phone,
+  Users,
+} from 'lucide-react';
 import { lazy, Suspense, useId, useState, type FormEvent } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Badge } from '../components/Badge';
@@ -107,9 +118,15 @@ export function PropertyPage() {
         </div>
         <div className={styles.headerAside}>
           <RatingPill rating={p.rating} />
-          <Badge tone="warning">Fictional demo property</Badge>
+          {p.isDemo ? (
+            <Badge tone="warning">Fictional demo property</Badge>
+          ) : (
+            <Badge tone="primary">Real place · simulated prices</Badge>
+          )}
         </div>
       </header>
+
+      {p.realPlace && <RealPlaceLinks name={p.name} place={p.realPlace} />}
 
       <Gallery images={p.images} />
 
@@ -198,6 +215,12 @@ export function PropertyPage() {
             Amenities
           </h2>
           <Amenities amenities={p.amenities} />
+          {!p.isDemo && p.amenities.length > 0 && (
+            <p className={styles.sectionLede}>
+              Amenities marked “confirmed” come from OpenStreetMap. The others are simulated for the
+              demo.
+            </p>
+          )}
         </section>
 
         <section aria-labelledby="location-title" className={`${styles.card} ${styles.wide}`}>
@@ -206,8 +229,10 @@ export function PropertyPage() {
           </h2>
           <p className={styles.sectionLede}>
             {p.suburb ? `${p.suburb}, ` : ''}
-            {p.destination.name}, {p.destination.province}. Coordinates are approximate, and the
-            property is fictional.
+            {p.destination.name}, {p.destination.province}.{' '}
+            {p.isDemo
+              ? 'Coordinates are approximate, and the property is fictional.'
+              : 'Location from OpenStreetMap.'}
           </p>
           <div className={styles.mapFrame}>
             <Suspense fallback={<div className={styles.mapLoading}>Loading map…</div>}>
@@ -231,7 +256,18 @@ function Gallery({ images }: { images: PropertyDetail['images'] }) {
       <figure className={styles.mainFigure}>
         <img src={current.url} alt={current.alt} className={styles.mainImage} />
         <figcaption className={styles.caption}>
-          Illustration {index + 1} of {images.length} · original demo artwork, not a photograph
+          {current.credit && current.creditUrl ? (
+            <>
+              Photo {index + 1} of {images.length} ·{' '}
+              <a href={current.creditUrl} target="_blank" rel="noopener noreferrer">
+                {current.credit}
+              </a>
+            </>
+          ) : (
+            <>
+              Illustration {index + 1} of {images.length} · original demo artwork, not a photograph
+            </>
+          )}
         </figcaption>
       </figure>
       <ul className={styles.thumbs}>
@@ -359,6 +395,7 @@ function Amenities({ amenities }: { amenities: PropertyDetail['amenities'] }) {
             {items.map((a) => (
               <li key={a.slug}>
                 <Check size={16} aria-hidden="true" /> {a.name}
+                {a.verified && <span className={styles.verified}>confirmed</span>}
               </li>
             ))}
           </ul>
@@ -381,7 +418,9 @@ function Provenance({ property }: { property: PropertyDetail }) {
         <div>
           <dt>Source</dt>
           <dd>
-            {property.dataSource.name} ({property.dataSource.kind})
+            {property.isDemo
+              ? `${property.dataSource.name} (${property.dataSource.kind})`
+              : 'Name, location and contact details: OpenStreetMap contributors (ODbL)'}
           </dd>
         </div>
         <div>
@@ -401,6 +440,44 @@ function Provenance({ property }: { property: PropertyDetail }) {
       </dl>
       <p className={styles.sectionLede}>
         <Link to="/how-it-works">How Wayfare’s demo data, pricing and ranking work →</Link>
+      </p>
+    </section>
+  );
+}
+
+/** Links to the real property. External, so they open in a new tab without a referrer. */
+function RealPlaceLinks({
+  name,
+  place,
+}: {
+  name: string;
+  place: NonNullable<PropertyDetail['realPlace']>;
+}) {
+  return (
+    <section className={styles.realLinks} aria-label={`Contact ${name}`}>
+      {place.websiteUrl && (
+        <a
+          className={styles.realLink}
+          href={place.websiteUrl}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+        >
+          <Globe size={16} aria-hidden="true" /> Visit website
+          <span className="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      )}
+      {place.phone && (
+        <a className={styles.realLink} href={`tel:${place.phone.replace(/[^+\d]/g, '')}`}>
+          <Phone size={16} aria-hidden="true" /> {place.phone}
+        </a>
+      )}
+      <a className={styles.realLink} href={place.osmUrl} target="_blank" rel="noopener noreferrer">
+        <ExternalLink size={16} aria-hidden="true" /> View on OpenStreetMap
+        <span className="visually-hidden"> (opens in a new tab)</span>
+      </a>
+      <p className={styles.realNote}>
+        Wayfare isn’t affiliated with this property. Confirm prices and availability with them
+        directly.
       </p>
     </section>
   );

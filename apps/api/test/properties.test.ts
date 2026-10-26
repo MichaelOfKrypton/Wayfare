@@ -22,6 +22,9 @@ describe('GET /api/properties/:slug', () => {
     expect(body.roomTypes.length).toBeGreaterThan(0);
     expect(body.providers.length).toBeGreaterThan(0);
     expect(body.checkIn.from).toMatch(/^\d{2}:\d{2}$/);
+    // Fictional properties have no real-world facts, and no amenity is marked as confirmed.
+    expect(body.realPlace).toBeNull();
+    expect(body.amenities.every((a) => a.verified === false)).toBe(true);
   });
 
   it('returns 404 for an unknown property and 400 for a malformed slug', async () => {

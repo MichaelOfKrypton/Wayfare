@@ -9,10 +9,10 @@ pg.types.setTypeParser(pg.types.builtins.NUMERIC, (value) => Number(value));
 
 export type Pool = pg.Pool;
 
-export function createPool(connectionString: string): pg.Pool {
+export function createPool(connectionString: string, max = 10): pg.Pool {
   return new pg.Pool({
     connectionString,
-    max: 10,
+    max,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
     // Guard against runaway queries; search should take milliseconds.

@@ -8,6 +8,14 @@ export const DATA_SOURCE = {
     'Deterministically generated demonstration data. Properties, providers, prices, availability and scores are fictional.',
 };
 
+export const OSM_DATA_SOURCE = {
+  code: 'openstreetmap',
+  name: 'OpenStreetMap',
+  kind: 'open_data' as const,
+  description:
+    'Names, locations, websites, phone numbers and star ratings of real places, © OpenStreetMap contributors (ODbL).',
+};
+
 export const PROPERTY_TYPES = [
   {
     slug: 'hotel',

@@ -69,6 +69,23 @@ describe('schema constraints', () => {
     await expectRejected(`UPDATE offers SET currency = 'USD' WHERE id = 1`, /check constraint/i);
   });
 
+  it('accepts only plain web links, valid phones and 1–5 stars for real places', async () => {
+    for (const url of [
+      'javascript:alert(1)',
+      'data:text/html,x',
+      'https://user@evil.example',
+      'ftp://x.example',
+    ]) {
+      await expectRejected(
+        `UPDATE properties SET website_url = '${url}' WHERE id = (SELECT min(id) FROM properties)`,
+        /website_url/,
+      );
+    }
+    await expectRejected(`UPDATE properties SET phone = 'call me' WHERE id = 1`, /phone/);
+    await expectRejected(`UPDATE properties SET stars = 6 WHERE id = 1`, /stars/);
+    await expectRejected(`UPDATE properties SET osm_id = 5 WHERE id = 1`, /osm_pair/);
+  });
+
   it('maintains updated_at on update', async () => {
     const client = await ctx.pool.connect();
     try {

@@ -68,7 +68,9 @@ export const PropertyCard = forwardRef<HTMLElement, Props>(function PropertyCard
           ) : (
             <div className={styles.imagePlaceholder} aria-hidden="true" />
           )}
-          <span className={styles.illustration}>Illustration</span>
+          <span className={styles.illustration} title={item.coverImage?.credit ?? undefined}>
+            {item.coverImage?.credit ? 'Photo' : 'Illustration'}
+          </span>
         </div>
 
         <div className={styles.body}>

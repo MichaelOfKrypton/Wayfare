@@ -42,16 +42,22 @@ export function validateDataset(dataset: Dataset): void {
       problems.push(`${p.slug} has no active offers`);
     if (p.images.some((i) => !i.alt.trim()))
       problems.push(`${p.slug} has an image without alt text`);
+    if (p.images.some((i) => /^https?:/.test(i.url) && (!i.credit || !i.creditUrl)))
+      problems.push(`${p.slug} has a third-party photo without credit`);
+    if (p.real?.websiteUrl && !/^https?:\/\//.test(p.real.websiteUrl))
+      problems.push(`${p.slug} has an unsafe website link`);
   }
 
-  // Near-duplicate guard: two properties within 30 m are probably the same place.
+  // Near-duplicate guard: two properties this close are probably the same place.
   const props = dataset.properties;
+  const minKm = dataset.minSpacingKm;
   for (let i = 0; i < props.length; i += 1) {
     for (let j = i + 1; j < props.length; j += 1) {
       const a = props[i]!;
       const b = props[j]!;
-      if (haversineKm(a, b) < 0.03)
-        problems.push(`${a.slug} and ${b.slug} are within 30 m of each other`);
+      if (Math.abs(a.lat - b.lat) > 0.01) continue; // cheap pre-check (~1 km)
+      if (haversineKm(a, b) < minKm)
+        problems.push(`${a.slug} and ${b.slug} are within ${minKm * 1000} m of each other`);
     }
   }
 

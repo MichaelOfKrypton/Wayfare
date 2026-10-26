@@ -9,6 +9,16 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().min(1).max(65_535).default(4000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  /** Database connections per API process. Keep workers × this below Postgres max_connections (100). */
+  DB_POOL_MAX: z.coerce.number().int().min(1).max(100).default(20),
+  /** Requests per minute per client IP; 0 disables the limit (load tests). */
+  RATE_LIMIT_PER_MINUTE: z.coerce.number().int().min(0).default(300),
+  /** How long identical read requests share one cached result. */
+  API_CACHE_TTL_MS: z.coerce.number().int().min(0).default(30_000),
+  /** API processes to run (one per CPU core is typical); 1 runs a single process. */
+  API_WORKERS: z.coerce.number().int().min(1).max(64).default(1),
+  /** Which dataset `db:seed` loads: real OSM places when a snapshot exists (auto), or the fictional set. */
+  SEED_DATASET: z.enum(['auto', 'osm', 'synthetic']).default('auto'),
   SEED_REFERENCE_DATE: z
     .string()
     .optional()

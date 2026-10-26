@@ -84,10 +84,16 @@
   list-style: none;
 }
 
-.destination {
+/* Card on top, optional photo credit below; the card fills the remaining height. */
+.destinations > li {
   display: flex;
   flex-direction: column;
-  height: 100%;
+}
+
+.destination {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -196,4 +202,17 @@
   margin-top: var(--space-6);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+}
+
+.destinationCredit {
+  display: block;
+  /* WCAG 2.2 target size: at least 24px tall. */
+  min-height: 24px;
+  line-height: 24px;
+  margin-top: var(--space-1);
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

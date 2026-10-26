@@ -44,9 +44,11 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
     const point = `ST_SetSRID(ST_MakePoint(${params.add(criteria.reference.lng)}, ${params.add(
       criteria.reference.lat,
     )}), 4326)::geography`;
-    distanceExpr = `ST_Distance(p.location, ${point})`;
+    // Sphere maths (use_spheroid = false): about 10x faster than the ellipsoid and within
+    // 0.5% of it, the same model as the app's haversine helper.
+    distanceExpr = `ST_Distance(p.location, ${point}, false)`;
     candidateWhere.push(
-      `ST_DWithin(p.location, ${point}, ${params.add(criteria.reference.radiusKm * 1000)})`,
+      `ST_DWithin(p.location, ${point}, ${params.add(criteria.reference.radiusKm * 1000)}, false)`,
     );
   }
   if (criteria.typeSlugs.length > 0) {
@@ -72,11 +74,9 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
     `o.status = 'active'`,
     `rt.max_guests >= ${params.add(criteria.guests)}`,
     `o.min_nights <= ${params.add(criteria.nights)}`,
-    `NOT EXISTS (
-       SELECT 1 FROM room_availability_blocks b
-       WHERE b.room_type_id = o.room_type_id
-         AND b.blocked && daterange(${checkIn}::date, ${checkOut}::date, '[)')
-     )`,
+    // Booked rooms for these dates come from one index scan (see booked_rooms below),
+    // instead of one availability lookup per offer.
+    `o.room_type_id NOT IN (SELECT room_type_id FROM booked_rooms)`,
   ];
   if (criteria.minBedrooms !== undefined)
     offerWhere.push(`rt.bedrooms >= ${params.add(criteria.minBedrooms)}`);
@@ -99,6 +99,10 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
        + 0.45 * (1 - percent_rank() OVER (ORDER BY f.average_nightly_cents))`;
 
   return `
+    booked_rooms AS MATERIALIZED (
+      SELECT DISTINCT b.room_type_id FROM room_availability_blocks b
+      WHERE b.blocked && daterange(${checkIn}::date, ${checkOut}::date, '[)')
+    ),
     candidates AS (
       SELECT p.id, ${distanceExpr} AS distance_m, rs.score AS rating_score, rs.rating_count
       FROM properties p
@@ -118,11 +122,11 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
                                     o.tax_rate_bps, o.prices_include_tax, ${checkIn}::date, ${checkOut}::date) q
       WHERE ${offerWhere.join('\n        AND ')}
     ),
-    offer_stats AS (
+    offer_stats AS MATERIALIZED (
       SELECT property_id, count(*)::int AS offer_count, count(DISTINCT provider_id)::int AS provider_count
       FROM eligible GROUP BY property_id
     ),
-    best AS (
+    best AS MATERIALIZED (
       SELECT DISTINCT ON (property_id) *
       FROM eligible
       ORDER BY property_id, total_cents, offer_id
@@ -148,11 +152,6 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
     )`;
 }
 
-interface SearchRow extends Omit<SearchResultItem, 'bestOffer'> {
-  totalItems: number;
-  bestOffer: SearchResultItem['bestOffer'];
-}
-
 export async function searchProperties(
   pool: Pool,
   criteria: SearchCriteria,
@@ -166,63 +165,67 @@ export async function searchProperties(
   const params = new SqlParams();
   const cte = buildRankedCte(criteria, params);
 
-  const pageParams = params.clone();
-  const pageSql = `
-    WITH ${cte}
-    SELECT o.id, p.slug, p.name,
-           json_build_object('slug', pt.slug, 'name', pt.name) AS "propertyType",
-           d.name AS "destinationName", p.suburb, d.province,
-           ST_Y(p.location::geometry) AS lat, ST_X(p.location::geometry) AS lng,
-           CASE WHEN o.distance_m IS NULL THEN NULL ELSE round((o.distance_m / 1000)::numeric, 2) END AS "distanceKm",
-           CASE WHEN o.rating_score IS NULL THEN NULL
-                ELSE json_build_object('score', o.rating_score, 'count', o.rating_count, 'label', 'Synthetic demo score')
-           END AS rating,
-           (SELECT json_build_object('url', i.url, 'alt', i.alt_text) FROM property_images i
-             WHERE i.property_id = p.id ORDER BY i.sort_order LIMIT 1) AS "coverImage",
-           (SELECT coalesce(json_agg(json_build_object('slug', k.slug, 'name', k.name)), '[]'::json) FROM (
-              SELECT a.slug, a.name FROM property_amenities pa JOIN amenities a ON a.id = pa.amenity_id
-              WHERE pa.property_id = p.id ORDER BY a.is_essential DESC, a.sort_order LIMIT 4) k) AS "keyAmenities",
-           json_build_object(
-             'offerId', o.offer_id, 'providerName', o.provider_name, 'roomTypeName', o.room_type_name,
-             'nights', o.nights, 'totalCents', o.total_cents, 'averageNightlyCents', o.average_nightly_cents,
-             'cancellationPolicy', o.cancellation_policy, 'mealPlan', o.meal_plan, 'dataStatus', o.data_status
-           ) AS "bestOffer",
-           o.offer_count AS "offerCount", o.provider_count AS "providerCount",
-           (SELECT max(max_guests) FROM room_types WHERE property_id = p.id)::int AS "maxGuests",
-           o.total_items::int AS "totalItems"
-    FROM ordered o
-    JOIN properties p ON p.id = o.id
-    JOIN property_types pt ON pt.id = p.property_type_id
-    JOIN destinations d ON d.id = p.destination_id
-    WHERE o.position > ${pageParams.add(page.offset)} AND o.position <= ${pageParams.add(page.offset + page.limit)}
-    ORDER BY o.position`;
+  // One statement: the ranked pipeline (pricing every eligible offer) is computed
+  // once and feeds both the result page and the map points.
+  const pageFrom = params.add(page.offset);
+  const pageTo = params.add(page.offset + page.limit);
+  const mapLimit = params.add(MAP_POINT_LIMIT + 1);
+  const sql = `
+    WITH ${cte},
+    page_rows AS (
+      SELECT o.position, o.id, p.slug, p.name,
+             json_build_object('slug', pt.slug, 'name', pt.name) AS "propertyType",
+             d.name AS "destinationName", p.suburb, d.province,
+             ST_Y(p.location::geometry) AS lat, ST_X(p.location::geometry) AS lng,
+             CASE WHEN o.distance_m IS NULL THEN NULL ELSE round((o.distance_m / 1000)::numeric, 2) END AS "distanceKm",
+             CASE WHEN o.rating_score IS NULL THEN NULL
+                  ELSE json_build_object('score', o.rating_score, 'count', o.rating_count, 'label', 'Synthetic demo score')
+             END AS rating,
+             (SELECT json_build_object('url', i.url, 'alt', i.alt_text,
+                                       'credit', CASE WHEN i.credit_url IS NULL THEN NULL ELSE i.credit END,
+                                       'creditUrl', i.credit_url) FROM property_images i
+               WHERE i.property_id = p.id ORDER BY i.sort_order LIMIT 1) AS "coverImage",
+             (SELECT coalesce(json_agg(json_build_object('slug', k.slug, 'name', k.name)), '[]'::json) FROM (
+                SELECT a.slug, a.name FROM property_amenities pa JOIN amenities a ON a.id = pa.amenity_id
+                WHERE pa.property_id = p.id ORDER BY a.is_essential DESC, a.sort_order LIMIT 4) k) AS "keyAmenities",
+             json_build_object(
+               'offerId', o.offer_id, 'providerName', o.provider_name, 'roomTypeName', o.room_type_name,
+               'nights', o.nights, 'totalCents', o.total_cents, 'averageNightlyCents', o.average_nightly_cents,
+               'cancellationPolicy', o.cancellation_policy, 'mealPlan', o.meal_plan, 'dataStatus', o.data_status
+             ) AS "bestOffer",
+             o.offer_count AS "offerCount", o.provider_count AS "providerCount",
+             (SELECT max(max_guests) FROM room_types WHERE property_id = p.id)::int AS "maxGuests"
+      FROM ordered o
+      JOIN properties p ON p.id = o.id
+      JOIN property_types pt ON pt.id = p.property_type_id
+      JOIN destinations d ON d.id = p.destination_id
+      WHERE o.position > ${pageFrom} AND o.position <= ${pageTo}
+    ),
+    map_rows AS (
+      SELECT o.position, o.id, p.slug, p.name,
+             ST_Y(p.location::geometry) AS lat, ST_X(p.location::geometry) AS lng,
+             o.average_nightly_cents AS "averageNightlyCents"
+      FROM ordered o JOIN properties p ON p.id = o.id
+      WHERE o.position <= ${mapLimit}
+    )
+    SELECT
+      (SELECT count(*)::int FROM ordered) AS "totalItems",
+      (SELECT coalesce(json_agg(to_jsonb(r) - 'position' ORDER BY r.position), '[]'::json) FROM page_rows r) AS items,
+      (SELECT coalesce(json_agg(to_jsonb(m) - 'position' ORDER BY m.position), '[]'::json) FROM map_rows m) AS "mapPoints"`;
 
-  const mapParams = params.clone();
-  const mapSql = `
-    WITH ${cte}
-    SELECT o.id, p.slug, p.name,
-           ST_Y(p.location::geometry) AS lat, ST_X(p.location::geometry) AS lng,
-           o.average_nightly_cents AS "averageNightlyCents",
-           o.total_items::int AS "totalItems"
-    FROM ordered o JOIN properties p ON p.id = o.id
-    WHERE o.position <= ${mapParams.add(MAP_POINT_LIMIT + 1)}
-    ORDER BY o.position`;
-
-  const [pageResult, mapResult] = await Promise.all([
-    pool.query<SearchRow>(pageSql, pageParams.values),
-    pool.query<MapPoint & { totalItems: number }>(mapSql, mapParams.values),
-  ]);
-
-  // The page may be beyond the last result; the map query still knows the total.
-  const totalItems = mapResult.rows[0]?.totalItems ?? 0;
-  const items = pageResult.rows.map(({ totalItems: _t, ...item }) => item);
-  const mapPoints = mapResult.rows
-    .slice(0, MAP_POINT_LIMIT)
-    .map(({ totalItems: _t, ...point }) => point);
+  const { rows } = await pool.query<{
+    totalItems: number;
+    items: SearchResultItem[];
+    mapPoints: MapPoint[];
+  }>(sql, params.values);
+  const result = rows[0]!;
+  const totalItems = result.totalItems;
+  const items = result.items;
+  const mapPoints = result.mapPoints.slice(0, MAP_POINT_LIMIT);
   return {
     items,
     totalItems,
     mapPoints,
-    mapPointsTruncated: mapResult.rows.length > MAP_POINT_LIMIT,
+    mapPointsTruncated: result.mapPoints.length > MAP_POINT_LIMIT,
   };
 }
