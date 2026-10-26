@@ -9,7 +9,7 @@ import {
 } from './format';
 import { haversineKm, isWithinSouthAfrica, offsetByMetres } from './geo';
 
-const NBSP = ' ';
+const NBSP = '\u00A0';
 
 describe('formatZar', () => {
   it('formats whole rands with space grouping', () => {

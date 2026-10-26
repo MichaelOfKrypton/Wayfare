@@ -76,8 +76,8 @@ export class Rng {
 export function slugify(input: string): string {
   return input
     .normalize('NFKD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[’']/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\u2019']/g, '')
     .replace(/&/g, ' and ')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

@@ -3,7 +3,7 @@
  * across browsers, Node versions and ICU builds — which also keeps tests stable.
  */
 
-const NBSP = ' ';
+const NBSP = '\u00A0';
 
 /** 159000 → "R 1 590" (rounded to whole rand, space-grouped as is common in South Africa). */
 export function formatZar(cents: number): string {

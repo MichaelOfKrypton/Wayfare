@@ -7,7 +7,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['packages/*/src/**/*.test.ts', 'apps/api/src/**/*.test.ts'],
+          include: ['packages/*/src/**/*.test.ts', 'apps/api/src/**/*.test.ts', 'apps/api/seed/**/*.test.ts'],
         },
       },
       {

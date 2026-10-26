@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "../../node_modules/.tsbuild/shared",
     "rootDir": "src",
-    "types": []
+    "types": ["node"]
   },
   "include": ["src"]
 }
