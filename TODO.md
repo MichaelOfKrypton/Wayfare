@@ -113,7 +113,7 @@ A box is ticked only after the stated verification has been run. Last updated: 2
 - [x] Screenshots captured from the running app (`docs/screenshots/`)
 - [x] Commit history in logical phases
 - [x] Final audit from a fresh clone (Phase 14). _See the final report_
-- [ ] Push to GitHub. _Awaiting the owner's go-ahead_
+- [x] Push to GitHub (github.com/MichaelOfKrypton/Wayfare, 2026-10-27)
 
 ## 15. Optional future improvements ⏸
 
@@ -143,4 +143,4 @@ A box is ticked only after the stated verification has been run. Last updated: 2
 
 ## Blockers
 
-- None. The two open items need the owner: a manual geolocation check, and approval to push.
+- None. The one open item needs a person: a manual geolocation check in a real browser.
