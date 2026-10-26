@@ -55,7 +55,11 @@ export function countWeekendNights(checkIn: string, checkOut: string): number {
   return count;
 }
 
-export function calculateStayPrice(rates: OfferRates, checkIn: string, checkOut: string): StayPrice {
+export function calculateStayPrice(
+  rates: OfferRates,
+  checkIn: string,
+  checkOut: string,
+): StayPrice {
   const nights = diffDays(checkIn, checkOut);
   if (nights < 1) {
     throw new RangeError('A stay must be at least one night.');

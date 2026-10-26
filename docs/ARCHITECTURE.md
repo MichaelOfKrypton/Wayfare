@@ -21,12 +21,12 @@ flowchart LR
 
 There are three deployable parts, all local:
 
-| Part | Location | Responsibility |
-|---|---|---|
-| **Web** | `apps/web` | UI, URL-driven search state, map, presentation formatting |
-| **API** | `apps/api` | Validation, search, ranking, pricing (via SQL), error handling |
-| **Database** | Docker `postgis/postgis:17-3.5` | Storage, geospatial indexing, availability, stay pricing |
-| **Shared** | `packages/shared` | API contract types, Zod query schemas, the pricing reference implementation, formatting |
+| Part         | Location                        | Responsibility                                                                          |
+| ------------ | ------------------------------- | --------------------------------------------------------------------------------------- |
+| **Web**      | `apps/web`                      | UI, URL-driven search state, map, presentation formatting                               |
+| **API**      | `apps/api`                      | Validation, search, ranking, pricing (via SQL), error handling                          |
+| **Database** | Docker `postgis/postgis:17-3.5` | Storage, geospatial indexing, availability, stay pricing                                |
+| **Shared**   | `packages/shared`               | API contract types, Zod query schemas, the pricing reference implementation, formatting |
 
 ## 2. Repository layout
 
@@ -141,33 +141,34 @@ Property 1──* ProviderListing *──1 Provider     (how a provider lists th
 Offer *──1 RoomType, Offer *──1 ProviderListing  (composite FKs guarantee same property)
 ```
 
-A **provider listing** is the record of *one provider listing one property*. This is where matching the same property across providers would live in a future integration: `(provider_id, external_ref)` is unique. **Offers** are priced products, one per room type, meal plan and cancellation policy.
+A **provider listing** is the record of _one provider listing one property_. This is where matching the same property across providers would live in a future integration: `(provider_id, external_ref)` is unique. **Offers** are priced products, one per room type, meal plan and cancellation policy.
 
 ## 9. Error-handling strategy
 
-| Layer | Strategy |
-|---|---|
-| API input | Zod → 400 `VALIDATION_ERROR` with `issues[] {path, message}` |
-| Business rules | `ValidationError` (e.g. check-in in the past), `NotFoundError` (unknown slug) |
-| Database / unexpected | Logged with request id. Client gets 500 `INTERNAL_ERROR`, generic message |
-| DB unavailable | `/api/health/ready` → 503. Searches → 503 `SERVICE_UNAVAILABLE` |
-| Web data fetching | TanStack Query error → `ErrorState` with retry. 404 → dedicated not-found state |
-| Map | Tile error notice. Map failure never blocks the list |
-| Geolocation | Denied, unavailable or timed out → inline message, focus moves to manual destination input |
+| Layer                 | Strategy                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| API input             | Zod → 400 `VALIDATION_ERROR` with `issues[] {path, message}`                               |
+| Business rules        | `ValidationError` (e.g. check-in in the past), `NotFoundError` (unknown slug)              |
+| Database / unexpected | Logged with request id. Client gets 500 `INTERNAL_ERROR`, generic message                  |
+| DB unavailable        | `/api/health/ready` → 503. Searches → 503 `SERVICE_UNAVAILABLE`                            |
+| Web data fetching     | TanStack Query error → `ErrorState` with retry. 404 → dedicated not-found state            |
+| Map                   | Tile error notice. Map failure never blocks the list                                       |
+| Geolocation           | Denied, unavailable or timed out → inline message, focus moves to manual destination input |
 
 ## 10. Testing strategy
 
-| Level | Tool | Scope |
-|---|---|---|
-| Unit | Vitest | `pricing`, `geo`, `format`, search schema validation, SQL builder, ranking helpers, URL-state mapping, React components (Testing Library) |
-| Integration | Vitest + real PostgreSQL (`wayfare_test`) + `fastify.inject` | Every endpoint, combined filters, pagination, sorting, invalid params, empty results, SQL ↔ TS price parity, constraints |
-| E2E | Playwright (Chromium) | Home → search → filter → sort → map ↔ card → property → offers, mobile viewport, invalid input |
+| Level       | Tool                                                         | Scope                                                                                                                                     |
+| ----------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest                                                       | `pricing`, `geo`, `format`, search schema validation, SQL builder, ranking helpers, URL-state mapping, React components (Testing Library) |
+| Integration | Vitest + real PostgreSQL (`wayfare_test`) + `fastify.inject` | Every endpoint, combined filters, pagination, sorting, invalid params, empty results, SQL ↔ TS price parity, constraints                  |
+| E2E         | Playwright (Chromium)                                        | Home → search → filter → sort → map ↔ card → property → offers, mobile viewport, invalid input                                            |
 
 Integration tests migrate and seed `wayfare_test` with the same deterministic seed, using **today** as the reference date, so date-relative availability is reproducible.
 
 ## 11. Local development
 
 See the [README](../README.md). In short:
+
 1. `docker compose up -d`
 2. `npm install`
 3. `npm run db:reset`
@@ -181,13 +182,14 @@ A provider adapter would implement:
 
 ```ts
 interface ProviderAdapter {
-  code: string;                                   // matches providers.slug
+  code: string; // matches providers.slug
   fetchListings(area: BoundingBox): Promise<ExternalListing[]>;
   fetchOffers(listingRefs: string[], stay: StayQuery): Promise<ExternalOffer[]>;
 }
 ```
 
 The pipeline would run in four stages:
+
 1. **Ingest:** a scheduled job outside the request path writes `provider_listings` and `offers` with `data_status = 'cached'` and `last_checked_at`.
 2. **Match:** external listings are matched to existing `properties` by distance (< 75 m), normalised name similarity (`pg_trgm`) and address. Anything below the confidence threshold goes to a review queue rather than being merged automatically.
 3. **Freshness:** offers older than a threshold are shown as "price may have changed" and excluded from "cheapest" claims.

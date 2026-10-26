@@ -17,7 +17,13 @@ export const SORT_LABELS: Record<SortOption, string> = {
   distance_asc: 'Distance',
 };
 
-export const MEAL_PLANS = ['room_only', 'self_catering', 'breakfast', 'half_board', 'full_board'] as const;
+export const MEAL_PLANS = [
+  'room_only',
+  'self_catering',
+  'breakfast',
+  'half_board',
+  'full_board',
+] as const;
 export type MealPlan = (typeof MEAL_PLANS)[number];
 
 export const MEAL_PLAN_LABELS: Record<MealPlan, string> = {

@@ -7,28 +7,39 @@ const ctx = useTestApp();
 describe('health', () => {
   it('reports liveness and readiness', async () => {
     expect((await getJson(ctx.app, '/api/health')).body).toEqual({ status: 'ok' });
-    expect((await getJson(ctx.app, '/api/health/ready')).body).toEqual({ status: 'ready', database: 'ok' });
+    expect((await getJson(ctx.app, '/api/health/ready')).body).toEqual({
+      status: 'ready',
+      database: 'ok',
+    });
   });
 });
 
 describe('GET /api/destinations', () => {
   it('autocompletes by prefix, substring and with small typos', async () => {
-    const prefix = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', { q: 'stell' });
+    const prefix = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', {
+      q: 'stell',
+    });
     expect(prefix.body.items[0]?.slug).toBe('stellenbosch');
-    const substring = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', { q: 'waterfront' });
+    const substring = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', {
+      q: 'waterfront',
+    });
     expect(substring.body.items.map((d) => d.slug)).toContain('va-waterfront');
     const typo = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', { q: 'Knysan' });
     expect(typo.body.items.map((d) => d.slug)).toContain('knysna');
   });
 
   it('lists featured destinations with property counts', async () => {
-    const { body } = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', { featured: 'true' });
+    const { body } = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', {
+      featured: 'true',
+    });
     expect(body.items.length).toBeGreaterThanOrEqual(6);
     expect(body.items.every((d) => d.propertyCount > 0)).toBe(true);
   });
 
   it('honours limits and validates input', async () => {
-    const { body } = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', { limit: '2' });
+    const { body } = await getJson<DestinationsResponse>(ctx.app, '/api/destinations', {
+      limit: '2',
+    });
     expect(body.items).toHaveLength(2);
     const bad = await getJson<ApiErrorBody>(ctx.app, '/api/destinations', { limit: '500' });
     expect(bad.status).toBe(400);

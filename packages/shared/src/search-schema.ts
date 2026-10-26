@@ -56,10 +56,7 @@ export const stayQueryShape = {
   guests: numberParam({ min: 1, max: 16, integer: true }),
 };
 
-function refineStay(
-  value: { checkIn: unknown; checkOut: unknown },
-  ctx: z.RefinementCtx,
-): void {
+function refineStay(value: { checkIn: unknown; checkOut: unknown }, ctx: z.RefinementCtx): void {
   // Zod 4 still runs refinements when individual fields failed; only check valid dates.
   if (
     typeof value.checkIn !== 'string' ||
@@ -71,7 +68,11 @@ function refineStay(
   }
   const nights = diffDays(value.checkIn, value.checkOut);
   if (nights < 1) {
-    ctx.addIssue({ code: 'custom', path: ['checkOut'], message: 'Check-out must be after check-in.' });
+    ctx.addIssue({
+      code: 'custom',
+      path: ['checkOut'],
+      message: 'Check-out must be after check-in.',
+    });
   } else if (nights > MAX_STAY_NIGHTS) {
     ctx.addIssue({
       code: 'custom',
@@ -158,7 +159,10 @@ export type OffersQuery = z.output<typeof offersQuerySchema>;
 
 export const destinationsQuerySchema = z.strictObject({
   q: z.string().trim().min(1).max(80).optional(),
-  featured: z.literal('true').transform(() => true).optional(),
+  featured: z
+    .literal('true')
+    .transform(() => true)
+    .optional(),
   limit: numberParam({ min: 1, max: 20, integer: true }).optional(),
 });
 export type DestinationsQuery = z.output<typeof destinationsQuerySchema>;

@@ -2,18 +2,32 @@
  * Builds the complete synthetic dataset in memory. Pure and deterministic:
  * the same reference date always yields exactly the same dataset.
  */
+import { addDays, offsetByMetres, type CancellationPolicy, type MealPlan } from '@wayfare/shared';
 import {
-  addDays,
-  offsetByMetres,
-  type CancellationPolicy,
-  type MealPlan,
-} from '@wayfare/shared';
-import { AMENITIES, PROPERTY_TYPES, PROVIDERS, type PropertyTypeSlug, type ProviderSeed } from './data/catalog';
+  AMENITIES,
+  PROPERTY_TYPES,
+  PROVIDERS,
+  type PropertyTypeSlug,
+  type ProviderSeed,
+} from './data/catalog';
 import { DESTINATIONS } from './data/destinations';
-import { ANCHORS, PROPERTIES, type Anchor, type PropertySeed, type Theme, type Tier } from './data/properties';
+import {
+  ANCHORS,
+  PROPERTIES,
+  type Anchor,
+  type PropertySeed,
+  type Theme,
+  type Tier,
+} from './data/properties';
 import { Rng, slugify } from './rng';
 
-export const IMAGE_VARIANTS = { exterior: 6, bedroom: 6, lounge: 4, terrace: 4, kitchen: 3 } as const;
+export const IMAGE_VARIANTS = {
+  exterior: 6,
+  bedroom: 6,
+  lounge: 4,
+  terrace: 4,
+  kitchen: 3,
+} as const;
 
 export interface GeneratedOffer {
   providerSlug: string;
@@ -89,52 +103,279 @@ const tierAtLeast = (tier: Tier, min: Tier) => TIER_ORDER.indexOf(tier) >= TIER_
 
 const ROOMS: Record<PropertyTypeSlug, RoomTemplate[]> = {
   hotel: [
-    { name: 'Standard Queen Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 queen bed', priceMultiplier: 1, description: 'A compact en-suite room with a queen bed and desk.' },
-    { name: 'Deluxe King Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 king bed', priceMultiplier: 1.3, description: 'A larger room with a king bed and a seating corner.' },
-    { name: 'Family Room', maxGuests: 4, bedrooms: 1, bathrooms: 1, beds: '1 king bed and 2 single beds', priceMultiplier: 1.65, description: 'Space for a family of four, with a king bed and two singles.' },
-    { name: 'Junior Suite', maxGuests: 3, bedrooms: 1, bathrooms: 1.5, beds: '1 king bed and 1 sleeper couch', priceMultiplier: 2.1, description: 'A suite with a separate lounge area.', minTier: 'premium' },
+    {
+      name: 'Standard Queen Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed',
+      priceMultiplier: 1,
+      description: 'A compact en-suite room with a queen bed and desk.',
+    },
+    {
+      name: 'Deluxe King Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed',
+      priceMultiplier: 1.3,
+      description: 'A larger room with a king bed and a seating corner.',
+    },
+    {
+      name: 'Family Room',
+      maxGuests: 4,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed and 2 single beds',
+      priceMultiplier: 1.65,
+      description: 'Space for a family of four, with a king bed and two singles.',
+    },
+    {
+      name: 'Junior Suite',
+      maxGuests: 3,
+      bedrooms: 1,
+      bathrooms: 1.5,
+      beds: '1 king bed and 1 sleeper couch',
+      priceMultiplier: 2.1,
+      description: 'A suite with a separate lounge area.',
+      minTier: 'premium',
+    },
   ],
   'boutique-hotel': [
-    { name: 'Classic Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 king bed', priceMultiplier: 1, description: 'A thoughtfully designed en-suite room.' },
-    { name: 'Garden Suite', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 king bed', priceMultiplier: 1.35, description: 'A suite opening onto a private patio.' },
-    { name: 'Loft Suite', maxGuests: 3, bedrooms: 1, bathrooms: 1.5, beds: '1 king bed and 1 daybed', priceMultiplier: 1.8, description: 'A double-volume suite with a mezzanine lounge.' },
+    {
+      name: 'Classic Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed',
+      priceMultiplier: 1,
+      description: 'A thoughtfully designed en-suite room.',
+    },
+    {
+      name: 'Garden Suite',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed',
+      priceMultiplier: 1.35,
+      description: 'A suite opening onto a private patio.',
+    },
+    {
+      name: 'Loft Suite',
+      maxGuests: 3,
+      bedrooms: 1,
+      bathrooms: 1.5,
+      beds: '1 king bed and 1 daybed',
+      priceMultiplier: 1.8,
+      description: 'A double-volume suite with a mezzanine lounge.',
+    },
   ],
   guesthouse: [
-    { name: 'Standard Double Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 double bed', priceMultiplier: 1, description: 'A comfortable en-suite double room.' },
-    { name: 'Garden Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 queen bed', priceMultiplier: 1.15, description: 'A quiet room with its own garden entrance.' },
-    { name: 'Family Suite', maxGuests: 4, bedrooms: 2, bathrooms: 1, beds: '1 queen bed and 2 single beds', priceMultiplier: 1.6, description: 'Two interleading rooms sharing a bathroom.' },
+    {
+      name: 'Standard Double Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 double bed',
+      priceMultiplier: 1,
+      description: 'A comfortable en-suite double room.',
+    },
+    {
+      name: 'Garden Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed',
+      priceMultiplier: 1.15,
+      description: 'A quiet room with its own garden entrance.',
+    },
+    {
+      name: 'Family Suite',
+      maxGuests: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      beds: '1 queen bed and 2 single beds',
+      priceMultiplier: 1.6,
+      description: 'Two interleading rooms sharing a bathroom.',
+    },
   ],
   'bed-and-breakfast': [
-    { name: 'Double Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 queen bed', priceMultiplier: 1, description: 'An en-suite room with breakfast served in the main house.' },
-    { name: 'Twin Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '2 single beds', priceMultiplier: 1, description: 'Two single beds, ideal for friends travelling together.' },
-    { name: 'Family Room', maxGuests: 3, bedrooms: 1, bathrooms: 1, beds: '1 queen bed and 1 single bed', priceMultiplier: 1.35, description: 'A larger room with an extra single bed.' },
+    {
+      name: 'Double Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed',
+      priceMultiplier: 1,
+      description: 'An en-suite room with breakfast served in the main house.',
+    },
+    {
+      name: 'Twin Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '2 single beds',
+      priceMultiplier: 1,
+      description: 'Two single beds, ideal for friends travelling together.',
+    },
+    {
+      name: 'Family Room',
+      maxGuests: 3,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed and 1 single bed',
+      priceMultiplier: 1.35,
+      description: 'A larger room with an extra single bed.',
+    },
   ],
   lodge: [
-    { name: 'Chalet', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 king bed', priceMultiplier: 1, description: 'A private chalet with a deck.' },
-    { name: 'Family Chalet', maxGuests: 4, bedrooms: 2, bathrooms: 2, beds: '1 king bed and 2 single beds', priceMultiplier: 1.7, description: 'Two bedrooms and a shared lounge.' },
-    { name: 'Luxury Suite', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 king bed', priceMultiplier: 1.6, description: 'A secluded suite with an outdoor shower.', minTier: 'premium' },
+    {
+      name: 'Chalet',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed',
+      priceMultiplier: 1,
+      description: 'A private chalet with a deck.',
+    },
+    {
+      name: 'Family Chalet',
+      maxGuests: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      beds: '1 king bed and 2 single beds',
+      priceMultiplier: 1.7,
+      description: 'Two bedrooms and a shared lounge.',
+    },
+    {
+      name: 'Luxury Suite',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 king bed',
+      priceMultiplier: 1.6,
+      description: 'A secluded suite with an outdoor shower.',
+      minTier: 'premium',
+    },
   ],
   'self-catering': [
-    { name: 'One-bedroom Cottage', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 queen bed', priceMultiplier: 1, description: 'A cottage with a fully equipped kitchen.' },
-    { name: 'Two-bedroom Cottage', maxGuests: 4, bedrooms: 2, bathrooms: 1, beds: '1 queen bed and 2 single beds', priceMultiplier: 1.55, description: 'Two bedrooms, a kitchen and an outdoor braai.' },
+    {
+      name: 'One-bedroom Cottage',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed',
+      priceMultiplier: 1,
+      description: 'A cottage with a fully equipped kitchen.',
+    },
+    {
+      name: 'Two-bedroom Cottage',
+      maxGuests: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      beds: '1 queen bed and 2 single beds',
+      priceMultiplier: 1.55,
+      description: 'Two bedrooms, a kitchen and an outdoor braai.',
+    },
   ],
   'holiday-home': [
-    { name: 'Entire Home', maxGuests: 6, bedrooms: 3, bathrooms: 2, beds: '2 queen beds and 2 single beds', priceMultiplier: 2.4, description: 'The whole house, with a kitchen and living areas.' },
-    { name: 'Entire Home with Annex', maxGuests: 8, bedrooms: 4, bathrooms: 3, beds: '3 queen beds and 2 single beds', priceMultiplier: 3, description: 'The main house plus a separate garden annex.', minTier: 'premium' },
+    {
+      name: 'Entire Home',
+      maxGuests: 6,
+      bedrooms: 3,
+      bathrooms: 2,
+      beds: '2 queen beds and 2 single beds',
+      priceMultiplier: 2.4,
+      description: 'The whole house, with a kitchen and living areas.',
+    },
+    {
+      name: 'Entire Home with Annex',
+      maxGuests: 8,
+      bedrooms: 4,
+      bathrooms: 3,
+      beds: '3 queen beds and 2 single beds',
+      priceMultiplier: 3,
+      description: 'The main house plus a separate garden annex.',
+      minTier: 'premium',
+    },
   ],
   'farm-stay': [
-    { name: 'Farmhouse Room', maxGuests: 2, bedrooms: 1, bathrooms: 1, beds: '1 double bed', priceMultiplier: 1, description: 'A room in the original farmhouse.' },
-    { name: 'Farm Cottage', maxGuests: 5, bedrooms: 2, bathrooms: 1, beds: '1 queen bed and 3 single beds', priceMultiplier: 1.6, description: 'A stand-alone cottage with views over the fields.' },
+    {
+      name: 'Farmhouse Room',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 double bed',
+      priceMultiplier: 1,
+      description: 'A room in the original farmhouse.',
+    },
+    {
+      name: 'Farm Cottage',
+      maxGuests: 5,
+      bedrooms: 2,
+      bathrooms: 1,
+      beds: '1 queen bed and 3 single beds',
+      priceMultiplier: 1.6,
+      description: 'A stand-alone cottage with views over the fields.',
+    },
   ],
   apartment: [
-    { name: 'Studio Apartment', maxGuests: 2, bedrooms: 0, bathrooms: 1, beds: '1 queen bed', priceMultiplier: 1, description: 'An open-plan studio with a kitchenette.' },
-    { name: 'One-bedroom Apartment', maxGuests: 3, bedrooms: 1, bathrooms: 1, beds: '1 queen bed and 1 sleeper couch', priceMultiplier: 1.3, description: 'A separate bedroom, kitchen and lounge.' },
-    { name: 'Two-bedroom Apartment', maxGuests: 4, bedrooms: 2, bathrooms: 2, beds: '2 queen beds', priceMultiplier: 1.8, description: 'Two en-suite bedrooms and a balcony.' },
+    {
+      name: 'Studio Apartment',
+      maxGuests: 2,
+      bedrooms: 0,
+      bathrooms: 1,
+      beds: '1 queen bed',
+      priceMultiplier: 1,
+      description: 'An open-plan studio with a kitchenette.',
+    },
+    {
+      name: 'One-bedroom Apartment',
+      maxGuests: 3,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 queen bed and 1 sleeper couch',
+      priceMultiplier: 1.3,
+      description: 'A separate bedroom, kitchen and lounge.',
+    },
+    {
+      name: 'Two-bedroom Apartment',
+      maxGuests: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      beds: '2 queen beds',
+      priceMultiplier: 1.8,
+      description: 'Two en-suite bedrooms and a balcony.',
+    },
   ],
   backpackers: [
-    { name: 'Private Double', maxGuests: 2, bedrooms: 1, bathrooms: 0.5, beds: '1 double bed', priceMultiplier: 1, description: 'A private room; bathrooms are shared.' },
-    { name: 'Private Twin', maxGuests: 2, bedrooms: 1, bathrooms: 0.5, beds: '2 single beds', priceMultiplier: 1, description: 'A private twin room; bathrooms are shared.' },
-    { name: 'En-suite Family Room', maxGuests: 4, bedrooms: 1, bathrooms: 1, beds: '1 double bed and 1 bunk bed', priceMultiplier: 1.5, description: 'A private family room with its own bathroom.' },
+    {
+      name: 'Private Double',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 0.5,
+      beds: '1 double bed',
+      priceMultiplier: 1,
+      description: 'A private room; bathrooms are shared.',
+    },
+    {
+      name: 'Private Twin',
+      maxGuests: 2,
+      bedrooms: 1,
+      bathrooms: 0.5,
+      beds: '2 single beds',
+      priceMultiplier: 1,
+      description: 'A private twin room; bathrooms are shared.',
+    },
+    {
+      name: 'En-suite Family Room',
+      maxGuests: 4,
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: '1 double bed and 1 bunk bed',
+      priceMultiplier: 1.5,
+      description: 'A private family room with its own bathroom.',
+    },
   ],
 };
 
@@ -161,7 +402,10 @@ function chooseAmenities(rng: Rng, seed: PropertySeed, anchor: Anchor): string[]
   p('secure-parking', t === 'backpackers' ? 0.4 : 0.85);
   p('backup-power', premium ? 0.85 : 0.5);
   p('water-backup', 0.35);
-  p('air-conditioning', anchor.theme === 'bushveld' || anchor.destination === 'durban' ? 0.85 : premium ? 0.7 : 0.35);
+  p(
+    'air-conditioning',
+    anchor.theme === 'bushveld' || anchor.destination === 'durban' ? 0.85 : premium ? 0.7 : 0.35,
+  );
   p('fireplace', anchor.theme === 'mountain' || anchor.theme === 'forest' ? 0.6 : 0.1);
   p('workspace', t === 'hotel' || t === 'apartment' ? 0.7 : 0.25);
   if (selfCatering) set.add('kitchen');
@@ -173,12 +417,18 @@ function chooseAmenities(rng: Rng, seed: PropertySeed, anchor: Anchor): string[]
   if (anchor.mountains) p('mountain-view', 0.6);
   p('family-rooms', ROOMS[t].some((r) => r.maxGuests >= 4) ? 0.8 : 0.1);
   p('cot-available', 0.45);
-  p('pet-friendly', t === 'farm-stay' || t === 'self-catering' || t === 'holiday-home' ? 0.45 : 0.1);
+  p(
+    'pet-friendly',
+    t === 'farm-stay' || t === 'self-catering' || t === 'holiday-home' ? 0.45 : 0.1,
+  );
   p('step-free-access', t === 'hotel' ? 0.8 : 0.3);
   if (set.has('step-free-access')) p('accessible-bathroom', 0.55);
   if (t === 'hotel') set.add('reception-24h');
   p('self-check-in', selfCatering ? 0.7 : t === 'backpackers' ? 0.3 : 0.05);
-  p('restaurant', t === 'hotel' || t === 'lodge' || (t === 'boutique-hotel' && premium) ? 0.85 : 0.05);
+  p(
+    'restaurant',
+    t === 'hotel' || t === 'lodge' || (t === 'boutique-hotel' && premium) ? 0.85 : 0.05,
+  );
   p('airport-shuttle', t === 'hotel' ? 0.45 : 0.1);
   p('spa', seed.tier === 'luxury' ? 0.7 : premium ? 0.25 : 0);
   p('gym', t === 'hotel' && premium ? 0.8 : t === 'hotel' ? 0.35 : 0.03);
@@ -191,12 +441,32 @@ function chooseAmenities(rng: Rng, seed: PropertySeed, anchor: Anchor): string[]
 // Descriptions
 // ---------------------------------------------------------------------------
 const THEME_INTROS: Record<Theme, string[]> = {
-  coast: ['A short walk from the sea in {suburb}', 'Close to the beaches of {suburb}', 'Within earshot of the waves in {suburb}'],
+  coast: [
+    'A short walk from the sea in {suburb}',
+    'Close to the beaches of {suburb}',
+    'Within earshot of the waves in {suburb}',
+  ],
   city: ['Well placed in {suburb}', 'In the heart of {suburb}', 'On a quiet street in {suburb}'],
-  winelands: ['Among the vineyards of {suburb}', 'In the winelands of {suburb}', 'Surrounded by oaks and vines in {suburb}'],
-  forest: ['Tucked into the green hills of {suburb}', 'On the forest edge near {suburb}', 'Among indigenous trees in {suburb}'],
-  mountain: ['Beneath the peaks around {suburb}', 'With mountain air in {suburb}', 'At the foot of the mountains near {suburb}'],
-  bushveld: ['In the bushveld outside {suburb}', 'On the road to the Kruger near {suburb}', 'Among marula and acacia trees near {suburb}'],
+  winelands: [
+    'Among the vineyards of {suburb}',
+    'In the winelands of {suburb}',
+    'Surrounded by oaks and vines in {suburb}',
+  ],
+  forest: [
+    'Tucked into the green hills of {suburb}',
+    'On the forest edge near {suburb}',
+    'Among indigenous trees in {suburb}',
+  ],
+  mountain: [
+    'Beneath the peaks around {suburb}',
+    'With mountain air in {suburb}',
+    'At the foot of the mountains near {suburb}',
+  ],
+  bushveld: [
+    'In the bushveld outside {suburb}',
+    'On the road to the Kruger near {suburb}',
+    'Among marula and acacia trees near {suburb}',
+  ],
 };
 
 const TYPE_SENTENCES: Record<PropertyTypeSlug, string> = {
@@ -205,7 +475,8 @@ const TYPE_SENTENCES: Record<PropertyTypeSlug, string> = {
   guesthouse: '{name} is an owner-run guesthouse with a handful of en-suite rooms.',
   'bed-and-breakfast': '{name} is a homely B&B where breakfast is served each morning.',
   lodge: '{name} is a lodge built for slow days outdoors and quiet evenings.',
-  'self-catering': '{name} offers self-catering units with everything needed to cook your own meals.',
+  'self-catering':
+    '{name} offers self-catering units with everything needed to cook your own meals.',
   'holiday-home': '{name} is an entire home for families and groups who want their own space.',
   'farm-stay': '{name} is set on a working smallholding with space to roam.',
   apartment: '{name} offers apartments with a kitchenette, suited to longer stays.',
@@ -244,7 +515,9 @@ function mealPlansFor(seed: PropertySeed): MealPlan[] {
     case 'apartment':
       return ['self_catering'];
     case 'lodge':
-      return tierAtLeast(seed.tier, 'premium') ? ['half_board', 'full_board', 'breakfast'] : ['breakfast', 'half_board'];
+      return tierAtLeast(seed.tier, 'premium')
+        ? ['half_board', 'full_board', 'breakfast']
+        : ['breakfast', 'half_board'];
     case 'backpackers':
       return ['room_only'];
     default:
@@ -275,9 +548,15 @@ function buildOffers(
   const plans = mealPlansFor(seed);
   const isBusiness = anchor.destination === 'johannesburg' || anchor.destination === 'pretoria';
   const hasWeekendRate = rng.chance(isBusiness ? 0.7 : 0.6);
-  const weekendFactor = isBusiness && seed.type === 'hotel' ? rng.float(0.8, 0.9) : rng.float(1.1, 1.25);
+  const weekendFactor =
+    isBusiness && seed.type === 'hotel' ? rng.float(0.8, 0.9) : rng.float(1.1, 1.25);
   const wholeUnit = seed.type === 'holiday-home' || seed.type === 'self-catering';
-  const minNightsBase = seed.type === 'holiday-home' && rng.chance(0.6) ? 2 : seed.tier === 'luxury' && seed.type === 'lodge' ? 2 : 1;
+  const minNightsBase =
+    seed.type === 'holiday-home' && rng.chance(0.6)
+      ? 2
+      : seed.tier === 'luxury' && seed.type === 'lodge'
+        ? 2
+        : 1;
   const cleaningFee = wholeUnit ? round10(rng.float(250, 650)) * 100 : 0;
   // Reference "check time": 06:00 SAST (04:00 UTC) on the reference date.
   const checkBase = Date.parse(`${referenceDate}T04:00:00Z`);
@@ -293,14 +572,18 @@ function buildOffers(
             ? 'non_refundable'
             : rng.chance(provider.freeCancellationShare)
               ? 'free'
-              : rng.weighted([['partial', 1], ['non_refundable', 1.4]] as const);
+              : rng.weighted([
+                  ['partial', 1],
+                  ['non_refundable', 1.4],
+                ] as const);
         const mealPlan = v === 1 ? plans[0]! : rng.pick(plans);
         const key = `${room.template.name}|${mealPlan}|${policy}`;
         if (keys.has(`${provider.slug}|${key}`)) continue;
         keys.add(`${provider.slug}|${key}`);
 
         const policyFactor = policy === 'free' ? 1.06 : policy === 'partial' ? 1.02 : 0.95;
-        const mealRands = MEAL_COST_PER_GUEST_RANDS[mealPlan] * Math.min(room.template.maxGuests, 2);
+        const mealRands =
+          MEAL_COST_PER_GUEST_RANDS[mealPlan] * Math.min(room.template.maxGuests, 2);
         let nightlyRands = round10(
           room.baseRands * provider.priceFactor * rng.float(0.96, 1.05) * policyFactor + mealRands,
         );
@@ -323,7 +606,9 @@ function buildOffers(
           cancellationPolicy: policy,
           freeCancellationHours: policy === 'free' ? rng.pick([24, 48, 72]) : null,
           nightlyRateCents: nightlyRands * 100,
-          weekendNightlyRateCents: hasWeekendRate ? round10(nightlyRands * weekendFactor) * 100 : null,
+          weekendNightlyRateCents: hasWeekendRate
+            ? round10(nightlyRands * weekendFactor) * 100
+            : null,
           feePerStayCents: fee.cents,
           feeLabel: fee.label,
           taxRateBps: 1500,
@@ -402,9 +687,18 @@ function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedP
   const templates = ROOMS[seed.type].filter((r) => !r.minTier || tierAtLeast(seed.tier, r.minTier));
   const roomCount = Math.max(1, templates.length - (rng.chance(0.3) ? 1 : 0));
   const chosen = templates.slice(0, roomCount);
-  const rooms = chosen.map((template) => ({ template, baseRands: baseRands * template.priceMultiplier }));
+  const rooms = chosen.map((template) => ({
+    template,
+    baseRands: baseRands * template.priceMultiplier,
+  }));
 
-  const providerCount = rng.weighted([[1, 20], [2, 30], [3, 30], [4, 15], [5, 5]] as const);
+  const providerCount = rng.weighted([
+    [1, 20],
+    [2, 30],
+    [3, 30],
+    [4, 15],
+    [5, 5],
+  ] as const);
   const providers = rng.shuffle(PROVIDERS).slice(0, providerCount);
 
   const offers = buildOffers(rng, seed, anchor, rooms, providers, referenceDate);
@@ -429,14 +723,30 @@ function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedP
 
   const ext = rng.int(1, IMAGE_VARIANTS.exterior);
   const typeName = PROPERTY_TYPES.find((t) => t.slug === seed.type)!.name.toLowerCase();
-  const wholeUnit = seed.type === 'self-catering' || seed.type === 'holiday-home' || seed.type === 'apartment';
+  const wholeUnit =
+    seed.type === 'self-catering' || seed.type === 'holiday-home' || seed.type === 'apartment';
   const images = [
-    { url: `/images/demo/${anchor.theme}-${ext}.svg`, alt: `Illustration of a ${typeName} setting in ${anchor.suburb}` },
-    { url: `/images/demo/bedroom-${rng.int(1, IMAGE_VARIANTS.bedroom)}.svg`, alt: 'Illustration of a bedroom' },
+    {
+      url: `/images/demo/${anchor.theme}-${ext}.svg`,
+      alt: `Illustration of a ${typeName} setting in ${anchor.suburb}`,
+    },
+    {
+      url: `/images/demo/bedroom-${rng.int(1, IMAGE_VARIANTS.bedroom)}.svg`,
+      alt: 'Illustration of a bedroom',
+    },
     wholeUnit
-      ? { url: `/images/demo/kitchen-${rng.int(1, IMAGE_VARIANTS.kitchen)}.svg`, alt: 'Illustration of a kitchen' }
-      : { url: `/images/demo/lounge-${rng.int(1, IMAGE_VARIANTS.lounge)}.svg`, alt: 'Illustration of a lounge' },
-    { url: `/images/demo/terrace-${rng.int(1, IMAGE_VARIANTS.terrace)}.svg`, alt: 'Illustration of an outdoor terrace' },
+      ? {
+          url: `/images/demo/kitchen-${rng.int(1, IMAGE_VARIANTS.kitchen)}.svg`,
+          alt: 'Illustration of a kitchen',
+        }
+      : {
+          url: `/images/demo/lounge-${rng.int(1, IMAGE_VARIANTS.lounge)}.svg`,
+          alt: 'Illustration of a lounge',
+        },
+    {
+      url: `/images/demo/terrace-${rng.int(1, IMAGE_VARIANTS.terrace)}.svg`,
+      alt: 'Illustration of an outdoor terrace',
+    },
   ];
 
   const times = checkTimes(seed.type);
@@ -456,7 +766,10 @@ function generateProperty(seed: PropertySeed, referenceDate: string): GeneratedP
     amenitySlugs,
     roomTypes,
     rating,
-    listings: providers.map((p) => ({ providerSlug: p.slug, externalRef: `${p.slug}-${slug}`.slice(0, 120) })),
+    listings: providers.map((p) => ({
+      providerSlug: p.slug,
+      externalRef: `${p.slug}-${slug}`.slice(0, 120),
+    })),
     offers,
   };
 }

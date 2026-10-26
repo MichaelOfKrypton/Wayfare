@@ -13,7 +13,10 @@ export interface MigrationResult {
  * Forward-only SQL migrations. Each file runs in its own transaction and is
  * recorded in `schema_migrations`; an advisory lock prevents concurrent runs.
  */
-export async function migrate(pool: Pool, log: (msg: string) => void = () => {}): Promise<MigrationResult> {
+export async function migrate(
+  pool: Pool,
+  log: (msg: string) => void = () => {},
+): Promise<MigrationResult> {
   const files = readdirSync(MIGRATIONS_DIR)
     .filter((f) => /^\d{3}_[a-z0-9_]+\.sql$/.test(f))
     .sort();
@@ -27,7 +30,9 @@ export async function migrate(pool: Pool, log: (msg: string) => void = () => {})
         version    text PRIMARY KEY,
         applied_at timestamptz NOT NULL DEFAULT now()
       )`);
-    const { rows } = await client.query<{ version: string }>('SELECT version FROM schema_migrations');
+    const { rows } = await client.query<{ version: string }>(
+      'SELECT version FROM schema_migrations',
+    );
     const done = new Set(rows.map((r) => r.version));
 
     for (const file of files) {

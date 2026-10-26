@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: true,
+      // The main chunk is ~230 kB gzipped, almost all React DOM, React Router and Zod
+      // (see docs/PERFORMANCE.md). Leaflet is already split out with the lazy map.
+      chunkSizeWarningLimit: 800,
     },
   };
 });

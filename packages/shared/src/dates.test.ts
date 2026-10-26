@@ -9,7 +9,9 @@ import {
 } from './dates';
 
 describe('isValidDateString', () => {
-  it.each(['2026-10-26', '2028-02-29'])('accepts %s', (v) => expect(isValidDateString(v)).toBe(true));
+  it.each(['2026-10-26', '2028-02-29'])('accepts %s', (v) =>
+    expect(isValidDateString(v)).toBe(true),
+  );
   it.each(['2026-02-30', '2027-02-29', '26-10-2026', '2026-1-5', '', '2026-10-26T00:00'])(
     'rejects %s',
     (v) => expect(isValidDateString(v)).toBe(false),

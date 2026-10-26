@@ -101,30 +101,31 @@ erDiagram
 
 ## 2. Tables
 
-| Table | Purpose | Notable constraints / indexes |
-|---|---|---|
-| `data_sources` | Where a record came from (`synthetic` for every MVP row) | `code` unique; `kind` check |
-| `destinations` | Searchable places: cities, towns, suburbs, landmarks | `slug` unique; GiST on `location`; GIN trigram on `name`; radius check `(0,200]` |
-| `property_types` | Hotel, guesthouse, B&B, lodge, self-catering, holiday home, farm stay, boutique hotel, backpackers, apartment | `slug` unique |
-| `amenities` | Wi-Fi, parking, pool, braai area, backup power, etc. | `slug` unique; `category` check |
-| `properties` | The physical establishment | `slug` unique; `(destination_id, lower(name))` unique; GiST on `location`; FK indexes |
-| `property_images` | Ordered gallery; `alt_text NOT NULL` | `(property_id, sort_order)` unique |
-| `property_amenities` | M:N join table | PK `(property_id, amenity_id)`; index on `amenity_id` |
-| `room_types` | Bookable unit types within a property | `(property_id, name)` unique; capacity checks; unique `(id, property_id)` for the composite FK |
-| `rating_summaries` | Aggregate **synthetic** score per property (optional, 1:0..1) | `score` 0–10; `rating_count ≥ 0` |
-| `providers` | Booking channels (fictional in MVP) | `slug` unique |
-| `provider_listings` | One provider's listing of one property. This is where cross-provider matching happens | `(property_id, provider_id)` unique; `(provider_id, external_ref)` unique |
-| `offers` | A priced product: listing × room type × meal plan × cancellation policy | Composite FKs (see §3); money checks; unique product key; partial index on active offers |
-| `room_availability_blocks` | Dates a room type is unavailable (simulated) | `EXCLUDE USING gist (room_type_id WITH =, blocked WITH &&)` stops overlapping blocks |
-| `schema_migrations` | Migration bookkeeping | `version` PK |
+| Table                      | Purpose                                                                                                       | Notable constraints / indexes                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `data_sources`             | Where a record came from (`synthetic` for every MVP row)                                                      | `code` unique; `kind` check                                                                    |
+| `destinations`             | Searchable places: cities, towns, suburbs, landmarks                                                          | `slug` unique; GiST on `location`; GIN trigram on `name`; radius check `(0,200]`               |
+| `property_types`           | Hotel, guesthouse, B&B, lodge, self-catering, holiday home, farm stay, boutique hotel, backpackers, apartment | `slug` unique                                                                                  |
+| `amenities`                | Wi-Fi, parking, pool, braai area, backup power, etc.                                                          | `slug` unique; `category` check                                                                |
+| `properties`               | The physical establishment                                                                                    | `slug` unique; `(destination_id, lower(name))` unique; GiST on `location`; FK indexes          |
+| `property_images`          | Ordered gallery; `alt_text NOT NULL`                                                                          | `(property_id, sort_order)` unique                                                             |
+| `property_amenities`       | M:N join table                                                                                                | PK `(property_id, amenity_id)`; index on `amenity_id`                                          |
+| `room_types`               | Bookable unit types within a property                                                                         | `(property_id, name)` unique; capacity checks; unique `(id, property_id)` for the composite FK |
+| `rating_summaries`         | Aggregate **synthetic** score per property (optional, 1:0..1)                                                 | `score` 0–10; `rating_count ≥ 0`                                                               |
+| `providers`                | Booking channels (fictional in MVP)                                                                           | `slug` unique                                                                                  |
+| `provider_listings`        | One provider's listing of one property. This is where cross-provider matching happens                         | `(property_id, provider_id)` unique; `(provider_id, external_ref)` unique                      |
+| `offers`                   | A priced product: listing × room type × meal plan × cancellation policy                                       | Composite FKs (see §3); money checks; unique product key; partial index on active offers       |
+| `room_availability_blocks` | Dates a room type is unavailable (simulated)                                                                  | `EXCLUDE USING gist (room_type_id WITH =, blocked WITH &&)` stops overlapping blocks           |
+| `schema_migrations`        | Migration bookkeeping                                                                                         | `version` PK                                                                                   |
 
 ## 3. Key design decisions
 
-1. **Property ≠ offer.** A property exists independently of who sells it. Offers belong to a `provider_listing` *and* a `room_type`. `offers.property_id` is denormalised so search can join directly, and its consistency is **enforced** with composite foreign keys:
+1. **Property ≠ offer.** A property exists independently of who sells it. Offers belong to a `provider_listing` _and_ a `room_type`. `offers.property_id` is denormalised so search can join directly, and its consistency is **enforced** with composite foreign keys:
    - `(room_type_id, property_id) → room_types(id, property_id)`
    - `(provider_listing_id, property_id) → provider_listings(id, property_id)`
 
    An offer therefore can never combine one property's room with another property's listing.
+
 2. **Money as integer cents** (`int`, ZAR only, `currency` check). This avoids floating-point drift. Rates are stored the way a provider would quote them:
    - `nightly_rate_cents`
    - an optional `weekend_nightly_rate_cents` (Friday and Saturday nights)
@@ -139,6 +140,7 @@ erDiagram
    - Tax is calculated **once per stay**, never per night, so there is no compounding of rounding.
 
    `packages/shared/src/pricing.ts` mirrors these rules, and an integration test proves parity.
+
 4. **Geography, not geometry.** `geography(Point,4326)` gives metre-accurate `ST_DWithin` and `ST_Distance` on the spheroid without projection choices. The scale is national, and GiST indexes make radius searches index-assisted. Latitude and longitude for the API come from `ST_Y/ST_X(location::geometry)`. A check constraint keeps points within South Africa's bounding box (lat −35.5…−21.5, lng 16…33.5), which catches swapped or garbage coordinates.
 5. **Availability as exclusion-constrained date ranges.** `daterange` with `[)` bounds matches hotel semantics (check-out day is free). An offer is unavailable when its room type has a block that overlaps `daterange(check_in, check_out, '[)')`. The `btree_gist` exclusion constraint makes overlapping blocks impossible.
 6. **Text + CHECK instead of ENUM types.** Enumerations such as `meal_plan`, `cancellation_policy` and `kind` are `text` with `CHECK (col IN (…))`. This is easier to evolve in migrations than `ALTER TYPE`, and just as safe.
@@ -157,15 +159,15 @@ erDiagram
 
 ## 4. Index strategy
 
-| Query | Index |
-|---|---|
-| Radius search | GiST `properties(location)` |
-| Destination autocomplete | GIN `destinations(name gin_trgm_ops)` + btree `slug` |
-| Type filter | btree `properties(property_type_id)` |
-| Amenity filter | PK `property_amenities(property_id, amenity_id)` + btree `(amenity_id)` |
-| Eligible offers per property | btree `offers(property_id) WHERE status = 'active'` |
-| Availability check | the GiST exclusion index on `(room_type_id, blocked)` doubles as the lookup index |
-| Offers by room / listing | btree FK indexes |
+| Query                        | Index                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| Radius search                | GiST `properties(location)`                                                       |
+| Destination autocomplete     | GIN `destinations(name gin_trgm_ops)` + btree `slug`                              |
+| Type filter                  | btree `properties(property_type_id)`                                              |
+| Amenity filter               | PK `property_amenities(property_id, amenity_id)` + btree `(amenity_id)`           |
+| Eligible offers per property | btree `offers(property_id) WHERE status = 'active'`                               |
+| Availability check           | the GiST exclusion index on `(room_type_id, blocked)` doubles as the lookup index |
+| Offers by room / listing     | btree FK indexes                                                                  |
 
 `EXPLAIN ANALYZE` output for the main search is recorded in [PERFORMANCE.md](PERFORMANCE.md) after implementation.
 

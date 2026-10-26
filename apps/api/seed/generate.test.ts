@@ -24,7 +24,9 @@ describe('synthetic dataset generator', () => {
     expect(() => validateDataset(dataset)).not.toThrow();
     expect(dataset.properties).toHaveLength(91);
     expect(new Set(dataset.properties.map((p) => p.typeSlug)).size).toBe(10);
-    expect(new Set(dataset.properties.map((p) => p.destinationSlug)).size).toBeGreaterThanOrEqual(15);
+    expect(new Set(dataset.properties.map((p) => p.destinationSlug)).size).toBeGreaterThanOrEqual(
+      15,
+    );
     const multiProvider = dataset.properties.filter((p) => p.listings.length >= 2).length;
     expect(multiProvider / dataset.properties.length).toBeGreaterThan(0.6);
   });

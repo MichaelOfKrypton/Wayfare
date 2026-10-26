@@ -1,0 +1,242 @@
+.card {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color var(--duration-fast),
+    box-shadow var(--duration-fast);
+  scroll-margin: var(--space-20);
+  container-type: inline-size;
+}
+
+.card:focus-within,
+.highlighted {
+  border-color: var(--color-navy-200);
+  box-shadow: var(--shadow-md);
+}
+
+.selected {
+  border-color: var(--color-accent);
+  box-shadow:
+    0 0 0 2px var(--color-accent),
+    var(--shadow-md);
+}
+
+/* The grid lives on an inner wrapper so container queries can measure the card. */
+.inner {
+  display: grid;
+}
+
+@container (min-width: 500px) {
+  .inner {
+    grid-template-columns: minmax(200px, 34%) 1fr;
+  }
+}
+
+.media {
+  position: relative;
+  background: var(--color-sand-100);
+}
+
+.image,
+.imagePlaceholder {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+}
+
+@container (min-width: 500px) {
+  .image,
+  .imagePlaceholder {
+    aspect-ratio: auto;
+    min-height: 200px;
+  }
+}
+
+.illustration {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: rgb(11 31 53 / 0.6);
+  color: #fff;
+  font-size: var(--text-xs);
+}
+
+.body {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+@container (min-width: 760px) {
+  .body {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+.main {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.link {
+  color: var(--color-navy-900);
+  text-decoration: none;
+}
+
+/* The whole card is clickable via the heading link's pseudo-element. */
+.link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.link:hover {
+  color: var(--color-navy-900);
+  text-decoration: underline;
+}
+
+.link:focus-visible {
+  outline: none;
+}
+
+.card:has(.link:focus-visible) {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.location {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.distance {
+  font-weight: 500;
+}
+
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.amenities li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.amenities svg {
+  color: var(--color-success-700);
+}
+
+.priceBlock {
+  display: grid;
+  align-content: end;
+  justify-items: start;
+  gap: 2px;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+@container (min-width: 760px) {
+  .priceBlock {
+    justify-items: end;
+    min-width: 190px;
+    padding-top: 0;
+    padding-left: var(--space-4);
+    border-top: none;
+    border-left: 1px solid var(--color-border);
+    text-align: right;
+  }
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-1);
+}
+
+.from,
+.provider,
+.capacity {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.capacity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.total {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-navy-900);
+}
+
+.totalLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.nightly {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+}
+
+.simulated {
+  font-weight: 600;
+  color: var(--color-warning-700);
+}
+
+.cta {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card:hover .cta {
+  background: var(--color-primary-hover);
+}

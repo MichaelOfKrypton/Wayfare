@@ -63,9 +63,15 @@ describe('searchQuerySchema', () => {
 
 describe('searchQueryToParams', () => {
   it('produces a canonical, round-trippable query string', () => {
-    const parsed = searchQuerySchema.parse({ ...stay, types: 'lodge,b-and-b', freeCancellation: 'false' });
+    const parsed = searchQuerySchema.parse({
+      ...stay,
+      types: 'lodge,b-and-b',
+      freeCancellation: 'false',
+    });
     const params = searchQueryToParams(parsed);
-    expect(params.toString()).toBe('checkIn=2026-10-26&checkOut=2026-10-28&guests=2&types=b-and-b%2Clodge');
+    expect(params.toString()).toBe(
+      'checkIn=2026-10-26&checkOut=2026-10-28&guests=2&types=b-and-b%2Clodge',
+    );
     expect(searchQuerySchema.parse(Object.fromEntries(params))).toEqual({
       ...parsed,
       types: ['b-and-b', 'lodge'],

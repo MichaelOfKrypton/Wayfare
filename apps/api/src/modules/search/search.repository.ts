@@ -45,7 +45,9 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
       criteria.reference.lat,
     )}), 4326)::geography`;
     distanceExpr = `ST_Distance(p.location, ${point})`;
-    candidateWhere.push(`ST_DWithin(p.location, ${point}, ${params.add(criteria.reference.radiusKm * 1000)})`);
+    candidateWhere.push(
+      `ST_DWithin(p.location, ${point}, ${params.add(criteria.reference.radiusKm * 1000)})`,
+    );
   }
   if (criteria.typeSlugs.length > 0) {
     candidateWhere.push(
@@ -76,7 +78,8 @@ function buildRankedCte(criteria: SearchCriteria, params: SqlParams): string {
          AND b.blocked && daterange(${checkIn}::date, ${checkOut}::date, '[)')
      )`,
   ];
-  if (criteria.minBedrooms !== undefined) offerWhere.push(`rt.bedrooms >= ${params.add(criteria.minBedrooms)}`);
+  if (criteria.minBedrooms !== undefined)
+    offerWhere.push(`rt.bedrooms >= ${params.add(criteria.minBedrooms)}`);
   if (criteria.freeCancellation) offerWhere.push(`o.cancellation_policy = 'free'`);
 
   const priceWhere: string[] = [];
@@ -154,7 +157,12 @@ export async function searchProperties(
   pool: Pool,
   criteria: SearchCriteria,
   page: { limit: number; offset: number },
-): Promise<{ items: SearchResultItem[]; totalItems: number; mapPoints: MapPoint[]; mapPointsTruncated: boolean }> {
+): Promise<{
+  items: SearchResultItem[];
+  totalItems: number;
+  mapPoints: MapPoint[];
+  mapPointsTruncated: boolean;
+}> {
   const params = new SqlParams();
   const cte = buildRankedCte(criteria, params);
 
@@ -208,6 +216,13 @@ export async function searchProperties(
   // The page may be beyond the last result; the map query still knows the total.
   const totalItems = mapResult.rows[0]?.totalItems ?? 0;
   const items = pageResult.rows.map(({ totalItems: _t, ...item }) => item);
-  const mapPoints = mapResult.rows.slice(0, MAP_POINT_LIMIT).map(({ totalItems: _t, ...point }) => point);
-  return { items, totalItems, mapPoints, mapPointsTruncated: mapResult.rows.length > MAP_POINT_LIMIT };
+  const mapPoints = mapResult.rows
+    .slice(0, MAP_POINT_LIMIT)
+    .map(({ totalItems: _t, ...point }) => point);
+  return {
+    items,
+    totalItems,
+    mapPoints,
+    mapPointsTruncated: mapResult.rows.length > MAP_POINT_LIMIT,
+  };
 }

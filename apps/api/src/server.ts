@@ -19,7 +19,9 @@ async function main(): Promise<void> {
   try {
     await pool.query('SELECT 1');
   } catch {
-    app.log.warn('Database is not reachable yet. Start it with `npm run db:up`; requests will return 503 until then.');
+    app.log.warn(
+      'Database is not reachable yet. Start it with `npm run db:up`; requests will return 503 until then.',
+    );
   }
 
   await app.listen({ host: config.API_HOST, port: config.API_PORT });

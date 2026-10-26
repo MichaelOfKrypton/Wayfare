@@ -21,7 +21,9 @@ export default async function setup(project: TestProject): Promise<void> {
   const url = process.env.TEST_DATABASE_URL;
   if (!url) throw new Error('TEST_DATABASE_URL is not set (see .env.example).');
   if (!/_test\b/.test(new URL(url).pathname)) {
-    throw new Error(`Refusing to reset a database whose name does not end in "_test": ${new URL(url).pathname}`);
+    throw new Error(
+      `Refusing to reset a database whose name does not end in "_test": ${new URL(url).pathname}`,
+    );
   }
 
   const referenceDate = todayInTimeZone();

@@ -113,6 +113,8 @@ export async function findOffersForStay(
 }
 
 export async function findPropertyIdBySlug(pool: Pool, slug: string): Promise<number | null> {
-  const { rows } = await pool.query<{ id: number }>('SELECT id FROM properties WHERE slug = $1', [slug]);
+  const { rows } = await pool.query<{ id: number }>('SELECT id FROM properties WHERE slug = $1', [
+    slug,
+  ]);
   return rows[0]?.id ?? null;
 }

@@ -1,4 +1,8 @@
-import { destinationsQuerySchema, slugParamSchema, type DestinationsResponse } from '@wayfare/shared';
+import {
+  destinationsQuerySchema,
+  slugParamSchema,
+  type DestinationsResponse,
+} from '@wayfare/shared';
 import type { FastifyPluginAsync } from 'fastify';
 import type { AppDeps } from '../../app';
 import { NotFoundError } from '../../lib/errors';

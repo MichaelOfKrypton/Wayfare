@@ -14,7 +14,10 @@ describe('pickRecommendation', () => {
   });
 
   it('recommends a free-cancellation offer within 10% of the cheapest', () => {
-    const rec = pickRecommendation([offer(1, 100_000, 'non_refundable'), offer(2, 109_000, 'free')]);
+    const rec = pickRecommendation([
+      offer(1, 100_000, 'non_refundable'),
+      offer(2, 109_000, 'free'),
+    ]);
     expect(rec).toMatchObject({ cheapestId: 1, recommendedId: 2 });
     expect(rec?.reason).toContain(`Free cancellation for ${formatZar(9_000)} more`);
   });
@@ -25,7 +28,10 @@ describe('pickRecommendation', () => {
   });
 
   it('keeps the cheapest when free cancellation costs more than 10% extra', () => {
-    const rec = pickRecommendation([offer(1, 100_000, 'non_refundable'), offer(2, 120_000, 'free')]);
+    const rec = pickRecommendation([
+      offer(1, 100_000, 'non_refundable'),
+      offer(2, 120_000, 'free'),
+    ]);
     expect(rec).toMatchObject({ cheapestId: 1, recommendedId: 1 });
     expect(rec?.reason).toMatch(/over 10% extra/);
   });

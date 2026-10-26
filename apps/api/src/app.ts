@@ -26,7 +26,14 @@ export interface BuildAppOptions {
   rateLimitPerMinute?: number;
 }
 
-const DB_UNAVAILABLE_CODES = new Set(['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', '57P01', '57P03', '53300']);
+const DB_UNAVAILABLE_CODES = new Set([
+  'ECONNREFUSED',
+  'ENOTFOUND',
+  'ETIMEDOUT',
+  '57P01',
+  '57P03',
+  '53300',
+]);
 
 export async function buildApp(options: BuildAppOptions): Promise<FastifyInstance> {
   const { config, pool } = options;
@@ -108,7 +115,11 @@ export async function buildApp(options: BuildAppOptions): Promise<FastifyInstanc
 
   app.setNotFoundHandler((request, reply) => {
     reply.status(404).send({
-      error: { code: 'NOT_FOUND', message: `No route for ${request.method} ${request.url.split('?')[0]}.`, requestId: request.id },
+      error: {
+        code: 'NOT_FOUND',
+        message: `No route for ${request.method} ${request.url.split('?')[0]}.`,
+        requestId: request.id,
+      },
     } satisfies ApiErrorBody);
   });
 

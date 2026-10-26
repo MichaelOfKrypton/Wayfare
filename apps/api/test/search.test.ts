@@ -1,4 +1,9 @@
-import { haversineKm, type ApiErrorBody, type SearchResponse, type SearchResultItem } from '@wayfare/shared';
+import {
+  haversineKm,
+  type ApiErrorBody,
+  type SearchResponse,
+  type SearchResultItem,
+} from '@wayfare/shared';
 import { describe, expect, it } from 'vitest';
 import { getJson, useTestApp } from './helpers';
 
@@ -24,7 +29,10 @@ async function searchAll(query: Record<string, string>): Promise<SearchResultIte
  * Independent oracle: which properties have at least one eligible offer?
  * Deliberately written as a plain EXISTS query, unlike the production CTE pipeline.
  */
-async function eligiblePropertyIds(stay: Record<string, string>, extra: { minBedrooms?: number; free?: boolean } = {}) {
+async function eligiblePropertyIds(
+  stay: Record<string, string>,
+  extra: { minBedrooms?: number; free?: boolean } = {},
+) {
   const { rows } = await ctx.pool.query<{ id: number }>(
     `SELECT p.id FROM properties p
      WHERE EXISTS (
@@ -89,7 +97,9 @@ describe('GET /api/search — results and counts', () => {
     const { body } = await search(ctx.stay(0, 1));
     expect(body.dataNotice).toMatch(/synthetic/i);
     expect(body.items.every((i) => i.bestOffer.dataStatus === 'simulated')).toBe(true);
-    expect(body.items.filter((i) => i.rating).every((i) => i.rating!.label === 'Synthetic demo score')).toBe(true);
+    expect(
+      body.items.filter((i) => i.rating).every((i) => i.rating!.label === 'Synthetic demo score'),
+    ).toBe(true);
   });
 });
 
@@ -108,8 +118,18 @@ describe('GET /api/search — location', () => {
   });
 
   it('supports coordinate searches with a custom radius', async () => {
-    const near = await searchAll({ ...ctx.stay(0, 1), lat: '-33.9249', lng: '18.4241', radiusKm: '3' });
-    const wide = await searchAll({ ...ctx.stay(0, 1), lat: '-33.9249', lng: '18.4241', radiusKm: '30' });
+    const near = await searchAll({
+      ...ctx.stay(0, 1),
+      lat: '-33.9249',
+      lng: '18.4241',
+      radiusKm: '3',
+    });
+    const wide = await searchAll({
+      ...ctx.stay(0, 1),
+      lat: '-33.9249',
+      lng: '18.4241',
+      radiusKm: '30',
+    });
     expect(near.length).toBeLessThan(wide.length);
     expect(near.every((i) => i.distanceKm! <= 3)).toBe(true);
   });
@@ -219,21 +239,45 @@ describe('GET /api/search — sorting', () => {
   it('sorts by price ascending and descending', async () => {
     const asc = await searchAll({ ...ctx.stay(0, 1), sort: 'price_asc' });
     const desc = await searchAll({ ...ctx.stay(0, 1), sort: 'price_desc' });
-    expect(sorted(asc.map((i) => i.bestOffer.averageNightlyCents), 'asc')).toBe(true);
-    expect(sorted(desc.map((i) => i.bestOffer.averageNightlyCents), 'desc')).toBe(true);
+    expect(
+      sorted(
+        asc.map((i) => i.bestOffer.averageNightlyCents),
+        'asc',
+      ),
+    ).toBe(true);
+    expect(
+      sorted(
+        desc.map((i) => i.bestOffer.averageNightlyCents),
+        'desc',
+      ),
+    ).toBe(true);
   });
 
   it('sorts by demo score with unrated properties last', async () => {
     const items = await searchAll({ ...ctx.stay(0, 1), sort: 'rating_desc' });
     const firstUnrated = items.findIndex((i) => i.rating === null);
     const rated = firstUnrated === -1 ? items : items.slice(0, firstUnrated);
-    expect(sorted(rated.map((i) => i.rating!.score), 'desc')).toBe(true);
+    expect(
+      sorted(
+        rated.map((i) => i.rating!.score),
+        'desc',
+      ),
+    ).toBe(true);
     expect(items.slice(rated.length).every((i) => i.rating === null)).toBe(true);
   });
 
   it('sorts by distance from the destination', async () => {
-    const items = await searchAll({ ...ctx.stay(0, 1), destination: 'johannesburg', sort: 'distance_asc' });
-    expect(sorted(items.map((i) => i.distanceKm!), 'asc')).toBe(true);
+    const items = await searchAll({
+      ...ctx.stay(0, 1),
+      destination: 'johannesburg',
+      sort: 'distance_asc',
+    });
+    expect(
+      sorted(
+        items.map((i) => i.distanceKm!),
+        'asc',
+      ),
+    ).toBe(true);
   });
 
   it('keeps pagination stable for every sort order', async () => {

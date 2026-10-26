@@ -24,7 +24,8 @@ async function main(): Promise<void> {
 
   try {
     if (command === 'reset') {
-      if (config.NODE_ENV === 'production') throw new Error('Refusing to reset a production database.');
+      if (config.NODE_ENV === 'production')
+        throw new Error('Refusing to reset a production database.');
       log(`resetting schema on ${redact(config.DATABASE_URL)}`);
       await resetSchema(pool);
     }

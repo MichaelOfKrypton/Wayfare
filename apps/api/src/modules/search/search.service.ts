@@ -63,14 +63,23 @@ export async function runSearch(deps: AppDeps, query: SearchQuery): Promise<Sear
   };
 }
 
-type ResolvedReference = NonNullable<SearchCriteria['reference']> & { label: string; kind: SearchReference['kind'] };
+type ResolvedReference = NonNullable<SearchCriteria['reference']> & {
+  label: string;
+  kind: SearchReference['kind'];
+};
 
-async function resolveReference(deps: AppDeps, query: SearchQuery): Promise<ResolvedReference | null> {
+async function resolveReference(
+  deps: AppDeps,
+  query: SearchQuery,
+): Promise<ResolvedReference | null> {
   if (query.destination) {
     const destination = await findDestinationBySlug(deps.pool, query.destination);
     if (!destination) {
       throw new ValidationError([
-        { path: 'destination', message: `We couldn't find a destination called "${query.destination}".` },
+        {
+          path: 'destination',
+          message: `We couldn't find a destination called "${query.destination}".`,
+        },
       ]);
     }
     return {
@@ -111,6 +120,7 @@ async function assertKnownSlugs(deps: AppDeps, query: SearchQuery, issues: Issue
     );
     const known = new Set(rows.map((r) => r.slug));
     const unknown = values.filter((v) => !known.has(v));
-    if (unknown.length) issues.push({ path, message: `${path}: unknown value(s): ${unknown.join(', ')}.` });
+    if (unknown.length)
+      issues.push({ path, message: `${path}: unknown value(s): ${unknown.join(', ')}.` });
   }
 }

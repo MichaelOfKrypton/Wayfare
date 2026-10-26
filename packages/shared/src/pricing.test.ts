@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { calculateStayPrice, countWeekendNights, roundHalfAwayFromZero, type OfferRates } from './pricing';
+import {
+  calculateStayPrice,
+  countWeekendNights,
+  roundHalfAwayFromZero,
+  type OfferRates,
+} from './pricing';
 
 const base: OfferRates = {
   nightlyRateCents: 100_000, // R1 000
@@ -39,13 +44,21 @@ describe('calculateStayPrice', () => {
   });
 
   it('adds the per-stay fee exactly once', () => {
-    const price = calculateStayPrice({ ...base, feePerStayCents: 25_000 }, '2026-10-26', '2026-10-31');
+    const price = calculateStayPrice(
+      { ...base, feePerStayCents: 25_000 },
+      '2026-10-26',
+      '2026-10-31',
+    );
     expect(price.feesCents).toBe(25_000);
     expect(price.totalCents).toBe(5 * 100_000 + 25_000);
   });
 
   it('reports included VAT without adding it to the total', () => {
-    const price = calculateStayPrice({ ...base, feePerStayCents: 15_000 }, '2026-10-26', '2026-10-27');
+    const price = calculateStayPrice(
+      { ...base, feePerStayCents: 15_000 },
+      '2026-10-26',
+      '2026-10-27',
+    );
     // taxable 115 000; included VAT = 115 000 × 15/115 = 15 000
     expect(price.taxCents).toBe(15_000);
     expect(price.totalCents).toBe(115_000);

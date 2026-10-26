@@ -98,7 +98,7 @@ async function insertDestinations(client: PoolClient, dataset: Dataset): Promise
      SELECT slug, name, kind, province,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
             "radiusKm", coalesce(featured, false), ord, summary,
-            CASE WHEN theme IS NULL THEN NULL ELSE '/images/demo/' || theme || '-1.svg' END
+            CASE WHEN theme IS NULL THEN NULL ELSE '/images/demo/' || theme || '-' || (ord % 6 + 1) || '.svg' END
      FROM jsonb_to_recordset($1::jsonb)
        AS t(slug text, name text, kind text, province text, lat float8, lng float8,
             "radiusKm" numeric, featured boolean, summary text, theme text, ord int)
@@ -132,7 +132,17 @@ async function insertProperties(client: PoolClient, dataset: Dataset): Promise<v
      JOIN property_types pt ON pt.slug = t."typeSlug"
      JOIN destinations d ON d.slug = t."destinationSlug"
      ORDER BY t.ord`,
-    props.map(({ images: _i, amenitySlugs: _a, roomTypes: _r, rating: _ra, listings: _l, offers: _o, ...rest }) => rest),
+    props.map(
+      ({
+        images: _i,
+        amenitySlugs: _a,
+        roomTypes: _r,
+        rating: _ra,
+        listings: _l,
+        offers: _o,
+        ...rest
+      }) => rest,
+    ),
   );
 
   await insertJson(
@@ -172,7 +182,9 @@ async function insertProperties(client: PoolClient, dataset: Dataset): Promise<v
      JOIN room_types rt ON rt.property_id = p.id AND rt.name = t.room
      ORDER BY t.ord`,
     props.flatMap((p) =>
-      p.roomTypes.flatMap((r) => r.blocks.map(([start, end]) => ({ slug: p.slug, room: r.name, start, end }))),
+      p.roomTypes.flatMap((r) =>
+        r.blocks.map(([start, end]) => ({ slug: p.slug, room: r.name, start, end })),
+      ),
     ),
   );
 
@@ -192,7 +204,9 @@ async function insertProperties(client: PoolClient, dataset: Dataset): Promise<v
      FROM jsonb_to_recordset($1::jsonb) AS t(slug text, provider text, ref text, ord int)
      JOIN properties p ON p.slug = t.slug JOIN providers pr ON pr.slug = t.provider
      ORDER BY t.ord`,
-    props.flatMap((p) => p.listings.map((l) => ({ slug: p.slug, provider: l.providerSlug, ref: l.externalRef }))),
+    props.flatMap((p) =>
+      p.listings.map((l) => ({ slug: p.slug, provider: l.providerSlug, ref: l.externalRef })),
+    ),
   );
 
   await insertJson(

@@ -1,0 +1,98 @@
+/* Wayfare design tokens — see docs/DESIGN_SYSTEM.md. Components use these, never raw values. */
+:root {
+  /* Colour */
+  --color-navy-900: #0b1f35;
+  --color-navy-800: #0f2a47;
+  --color-navy-700: #12355b;
+  --color-navy-600: #1c4a7a;
+  --color-navy-200: #c3d3e6;
+  --color-navy-100: #dce6f2;
+  --color-navy-50: #eff4fa;
+  --color-ochre-700: #8f4015;
+  --color-ochre-600: #b0521c;
+  --color-ochre-100: #f8e6d9;
+  --color-sand-50: #faf8f4;
+  --color-sand-100: #f3efe7;
+  --color-sand-200: #e6e0d4;
+  --color-sand-300: #d3cbbb;
+  --color-surface: #ffffff;
+  --color-ink: #14202e;
+  --color-ink-muted: #55606e;
+  --color-success-700: #1d6b4f;
+  --color-success-100: #ddf1e8;
+  --color-warning-700: #7a4b00;
+  --color-warning-100: #fcefd2;
+  --color-danger-700: #a3261b;
+  --color-danger-100: #fbe3e0;
+
+  /* Semantic aliases */
+  --color-bg: var(--color-sand-50);
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--color-ink-muted);
+  --color-border: var(--color-sand-200);
+  --color-border-strong: var(--color-sand-300);
+  --color-primary: var(--color-navy-700);
+  --color-primary-hover: var(--color-navy-600);
+  --color-accent: var(--color-ochre-600);
+  --color-focus: #2f6fb3;
+
+  /* Typography */
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.375rem;
+  --text-4xl: 3rem;
+  --leading-body: 1.5;
+  --leading-tight: 1.2;
+
+  /* Spacing (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* Shape and depth */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(11 31 53 / 0.06);
+  --shadow-md: 0 4px 14px rgb(11 31 53 / 0.08), 0 1px 3px rgb(11 31 53 / 0.06);
+  --shadow-lg: 0 18px 40px rgb(11 31 53 / 0.16), 0 4px 10px rgb(11 31 53 / 0.08);
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Layout */
+  --content-max: 1200px;
+  --header-height: 64px;
+  --gutter: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}

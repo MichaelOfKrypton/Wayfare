@@ -1,0 +1,95 @@
+import { FlaskConical } from 'lucide-react';
+import { useEffect } from 'react';
+import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
+import styles from './Layout.module.css';
+
+export function Layout() {
+  const location = useLocation();
+  const isSearch = location.pathname === '/search';
+
+  // Move focus to the main landmark on navigation so screen-reader users hear the new page.
+  useEffect(() => {
+    document.getElementById('main')?.focus({ preventScroll: true });
+  }, [location.pathname]);
+
+  return (
+    <div className={styles.shell}>
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
+      <header className={styles.header}>
+        <div className={`${styles.headerInner} ${isSearch ? styles.wide : ''}`}>
+          <Link to="/" className={styles.brand} aria-label="Wayfare home">
+            <svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true">
+              <rect width="64" height="64" rx="14" fill="currentColor" />
+              <path
+                d="M14 20 L22 46 L32 26 L42 46 L50 20"
+                fill="none"
+                stroke="#0b1f35"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="50" cy="14" r="5" fill="#e08a4f" />
+            </svg>
+            <span className={styles.wordmark}>Wayfare</span>
+          </Link>
+          <nav aria-label="Main" className={styles.nav}>
+            <NavLink
+              to="/search"
+              className={({ isActive }) => (isActive ? styles.active : undefined)}
+            >
+              Stays
+            </NavLink>
+            <NavLink
+              to="/how-it-works"
+              className={({ isActive }) => (isActive ? styles.active : undefined)}
+            >
+              How it works
+            </NavLink>
+          </nav>
+        </div>
+      </header>
+
+      <div className={styles.notice} role="note">
+        <div className={`${styles.noticeInner} ${isSearch ? styles.wide : ''}`}>
+          <FlaskConical size={16} aria-hidden="true" />
+          <p>
+            <strong>Portfolio demo.</strong> All properties, providers, prices and scores are
+            synthetic. Nothing here can be booked.{' '}
+            <Link to="/how-it-works">How the data works</Link>
+          </p>
+        </div>
+      </div>
+
+      <main id="main" tabIndex={-1} className={styles.main}>
+        <Outlet />
+      </main>
+
+      {!isSearch && (
+        <footer className={styles.footer}>
+          <div className="container">
+            <div className={styles.footerGrid}>
+              <div>
+                <p className={styles.footerBrand}>Wayfare</p>
+                <p className={styles.footerText}>
+                  A South African accommodation discovery and price-comparison demo, built as a
+                  software engineering portfolio project.
+                </p>
+              </div>
+              <div>
+                <p className={styles.footerHeading}>About the data</p>
+                <p className={styles.footerText}>
+                  Properties and providers are fictional. Prices, availability and scores are
+                  simulated. Illustrations are original artwork. Map data © OpenStreetMap
+                  contributors.
+                </p>
+              </div>
+            </div>
+          </div>
+        </footer>
+      )}
+      <ScrollRestoration />
+    </div>
+  );
+}

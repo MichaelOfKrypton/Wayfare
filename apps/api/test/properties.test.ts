@@ -35,7 +35,11 @@ describe('GET /api/properties/:slug', () => {
 
 describe('GET /api/properties/:slug/offers', () => {
   it('groups eligible offers by room type with consistent badges', async () => {
-    const { status, body } = await getJson<OffersResponse>(ctx.app, `/api/properties/${SLUG}/offers`, ctx.stay(10, 2));
+    const { status, body } = await getJson<OffersResponse>(
+      ctx.app,
+      `/api/properties/${SLUG}/offers`,
+      ctx.stay(10, 2),
+    );
     expect(status).toBe(200);
     const offers = body.groups.flatMap((g) => g.offers);
     expect(offers.length).toBe(body.summary.eligibleCount);
@@ -56,7 +60,11 @@ describe('GET /api/properties/:slug/offers', () => {
   });
 
   it('breaks every price down consistently and labels it simulated', async () => {
-    const { body } = await getJson<OffersResponse>(ctx.app, `/api/properties/${SLUG}/offers`, ctx.stay(20, 3));
+    const { body } = await getJson<OffersResponse>(
+      ctx.app,
+      `/api/properties/${SLUG}/offers`,
+      ctx.stay(20, 3),
+    );
     for (const offer of body.groups.flatMap((g) => g.offers)) {
       const p = offer.price;
       const expectedTotal = p.roomSubtotalCents + p.feesCents + (p.taxIncluded ? 0 : p.taxCents);
@@ -69,7 +77,11 @@ describe('GET /api/properties/:slug/offers', () => {
   });
 
   it('explains why rooms are unavailable (too small for the group)', async () => {
-    const { body } = await getJson<OffersResponse>(ctx.app, `/api/properties/${SLUG}/offers`, ctx.stay(10, 2, 16));
+    const { body } = await getJson<OffersResponse>(
+      ctx.app,
+      `/api/properties/${SLUG}/offers`,
+      ctx.stay(10, 2, 16),
+    );
     expect(body.summary.eligibleCount).toBe(0);
     expect(body.groups).toEqual([]);
     expect(body.unavailable.length).toBeGreaterThan(0);
@@ -86,34 +98,57 @@ describe('GET /api/properties/:slug/offers', () => {
        ORDER BY b.id LIMIT 1`,
     );
     const block = rows[0]!;
-    const checkOut = new Date(Date.parse(`${block.start}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
-    const { body } = await getJson<OffersResponse>(ctx.app, `/api/properties/${block.slug}/offers`, {
-      checkIn: block.start,
-      checkOut,
-      guests: '1',
-    });
+    const checkOut = new Date(Date.parse(`${block.start}T00:00:00Z`) + 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const { body } = await getJson<OffersResponse>(
+      ctx.app,
+      `/api/properties/${block.slug}/offers`,
+      {
+        checkIn: block.start,
+        checkOut,
+        guests: '1',
+      },
+    );
     expect(body.unavailable.map((u) => u.reason)).toContain('booked_for_dates');
   });
 
   it('agrees with the search result for the same stay', async () => {
     const stay = ctx.stay(5, 2);
-    const search = await getJson<SearchResponse>(ctx.app, '/api/search', { ...stay, destination: 'knysna' });
+    const search = await getJson<SearchResponse>(ctx.app, '/api/search', {
+      ...stay,
+      destination: 'knysna',
+    });
     for (const item of search.body.items) {
-      const { body } = await getJson<OffersResponse>(ctx.app, `/api/properties/${item.slug}/offers`, stay);
-      const cheapest = body.groups.flatMap((g) => g.offers).find((o) => o.id === body.summary.cheapestOfferId);
+      const { body } = await getJson<OffersResponse>(
+        ctx.app,
+        `/api/properties/${item.slug}/offers`,
+        stay,
+      );
+      const cheapest = body.groups
+        .flatMap((g) => g.offers)
+        .find((o) => o.id === body.summary.cheapestOfferId);
       expect(cheapest?.price.totalCents).toBe(item.bestOffer.totalCents);
       expect(body.summary.eligibleCount).toBe(item.offerCount);
     }
   });
 
   it('validates the stay', async () => {
-    const { status, body } = await getJson<ApiErrorBody>(ctx.app, `/api/properties/${SLUG}/offers`, {
-      ...ctx.stay(0, 1),
-      checkOut: ctx.today,
-    });
+    const { status, body } = await getJson<ApiErrorBody>(
+      ctx.app,
+      `/api/properties/${SLUG}/offers`,
+      {
+        ...ctx.stay(0, 1),
+        checkOut: ctx.today,
+      },
+    );
     expect(status).toBe(400);
     expect(body.error.issues?.[0]?.path).toBe('checkOut');
-    const missing = await getJson<ApiErrorBody>(ctx.app, '/api/properties/no-such-place/offers', ctx.stay(0, 1));
+    const missing = await getJson<ApiErrorBody>(
+      ctx.app,
+      '/api/properties/no-such-place/offers',
+      ctx.stay(0, 1),
+    );
     expect(missing.status).toBe(404);
   });
 });

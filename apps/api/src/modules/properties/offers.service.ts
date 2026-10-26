@@ -25,7 +25,12 @@ export function buildOffersResponse(rows: OfferRow[], stay: StaySummary): Offers
     let group = groups.get(row.roomTypeId);
     if (!group) {
       group = {
-        roomType: { id: row.roomTypeId, name: row.roomTypeName, maxGuests: row.maxGuests, bedrooms: row.bedrooms },
+        roomType: {
+          id: row.roomTypeId,
+          name: row.roomTypeName,
+          maxGuests: row.maxGuests,
+          bedrooms: row.bedrooms,
+        },
         offers: [],
       };
       groups.set(row.roomTypeId, group);
@@ -36,7 +41,9 @@ export function buildOffersResponse(rows: OfferRow[], stay: StaySummary): Offers
     group.offers.sort((a, b) => a.price.totalCents - b.price.totalCents || a.id - b.id);
   }
   const sortedGroups = [...groups.values()].sort(
-    (a, b) => a.offers[0]!.price.totalCents - b.offers[0]!.price.totalCents || a.roomType.id - b.roomType.id,
+    (a, b) =>
+      a.offers[0]!.price.totalCents - b.offers[0]!.price.totalCents ||
+      a.roomType.id - b.roomType.id,
   );
 
   const totals = eligible.map((r) => r.totalCents);

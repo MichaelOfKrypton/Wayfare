@@ -62,7 +62,10 @@ describe('schema constraints', () => {
   });
 
   it('rejects negative money values and non-ZAR currencies', async () => {
-    await expectRejected(`UPDATE offers SET nightly_rate_cents = -1 WHERE id = 1`, /check constraint/i);
+    await expectRejected(
+      `UPDATE offers SET nightly_rate_cents = -1 WHERE id = 1`,
+      /check constraint/i,
+    );
     await expectRejected(`UPDATE offers SET currency = 'USD' WHERE id = 1`, /check constraint/i);
   });
 

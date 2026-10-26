@@ -11,7 +11,8 @@ import type {
 
 export interface ApiErrorBody {
   error: {
-    code: 'VALIDATION_ERROR' | 'NOT_FOUND' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'INTERNAL_ERROR';
+    code:
+      'VALIDATION_ERROR' | 'NOT_FOUND' | 'RATE_LIMITED' | 'SERVICE_UNAVAILABLE' | 'INTERNAL_ERROR';
     message: string;
     issues?: { path: string; message: string }[];
     requestId?: string;

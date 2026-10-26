@@ -11,7 +11,11 @@ import type { AppDeps } from '../../app';
 import { NotFoundError, ValidationError } from '../../lib/errors';
 import { parseOrThrow } from '../../lib/validation';
 import { buildOffersResponse } from './offers.service';
-import { findOffersForStay, findPropertyBySlug, findPropertyIdBySlug } from './properties.repository';
+import {
+  findOffersForStay,
+  findPropertyBySlug,
+  findPropertyIdBySlug,
+} from './properties.repository';
 
 export const propertyRoutes: FastifyPluginAsync<{ deps: AppDeps }> = async (app, { deps }) => {
   app.get('/properties/:slug', async (request): Promise<PropertyDetail> => {

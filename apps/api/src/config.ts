@@ -24,7 +24,9 @@ export function loadConfig(overrides: Partial<Record<keyof AppConfig, string>> =
   loadRootEnv();
   const result = envSchema.safeParse({ ...process.env, ...overrides });
   if (!result.success) {
-    const details = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`).join('\n');
+    const details = result.error.issues
+      .map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+      .join('\n');
     throw new Error(`Invalid configuration. Check your .env file (see .env.example):\n${details}`);
   }
   return result.data;

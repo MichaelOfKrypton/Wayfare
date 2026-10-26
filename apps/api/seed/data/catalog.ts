@@ -9,21 +9,66 @@ export const DATA_SOURCE = {
 };
 
 export const PROPERTY_TYPES = [
-  { slug: 'hotel', name: 'Hotel', description: 'Full-service hotel with reception and daily housekeeping.' },
-  { slug: 'boutique-hotel', name: 'Boutique hotel', description: 'Small, design-led hotel with personal service.' },
-  { slug: 'guesthouse', name: 'Guesthouse', description: 'Owner-run house with a handful of en-suite rooms.' },
-  { slug: 'bed-and-breakfast', name: 'B&B', description: 'Bed and breakfast with a home-cooked morning meal.' },
-  { slug: 'lodge', name: 'Lodge', description: 'Nature or bush lodge, often with meals and activities.' },
-  { slug: 'self-catering', name: 'Self-catering', description: 'Cottage or unit with its own kitchen.' },
-  { slug: 'holiday-home', name: 'Holiday home', description: 'An entire house for families and groups.' },
-  { slug: 'farm-stay', name: 'Farm stay', description: 'Accommodation on a working farm or smallholding.' },
-  { slug: 'apartment', name: 'Apartment', description: 'Serviced or private apartment in a residential block.' },
-  { slug: 'backpackers', name: 'Backpackers', description: 'Budget-friendly hostel with private rooms and shared spaces.' },
+  {
+    slug: 'hotel',
+    name: 'Hotel',
+    description: 'Full-service hotel with reception and daily housekeeping.',
+  },
+  {
+    slug: 'boutique-hotel',
+    name: 'Boutique hotel',
+    description: 'Small, design-led hotel with personal service.',
+  },
+  {
+    slug: 'guesthouse',
+    name: 'Guesthouse',
+    description: 'Owner-run house with a handful of en-suite rooms.',
+  },
+  {
+    slug: 'bed-and-breakfast',
+    name: 'B&B',
+    description: 'Bed and breakfast with a home-cooked morning meal.',
+  },
+  {
+    slug: 'lodge',
+    name: 'Lodge',
+    description: 'Nature or bush lodge, often with meals and activities.',
+  },
+  {
+    slug: 'self-catering',
+    name: 'Self-catering',
+    description: 'Cottage or unit with its own kitchen.',
+  },
+  {
+    slug: 'holiday-home',
+    name: 'Holiday home',
+    description: 'An entire house for families and groups.',
+  },
+  {
+    slug: 'farm-stay',
+    name: 'Farm stay',
+    description: 'Accommodation on a working farm or smallholding.',
+  },
+  {
+    slug: 'apartment',
+    name: 'Apartment',
+    description: 'Serviced or private apartment in a residential block.',
+  },
+  {
+    slug: 'backpackers',
+    name: 'Backpackers',
+    description: 'Budget-friendly hostel with private rooms and shared spaces.',
+  },
 ] as const;
 
 export type PropertyTypeSlug = (typeof PROPERTY_TYPES)[number]['slug'];
 
-export const AMENITIES: { slug: string; name: string; category: AmenityCategory; isEssential?: boolean }[] = [
+export const AMENITIES: {
+  slug: string;
+  name: string;
+  category: AmenityCategory;
+  isEssential?: boolean;
+}[] = [
   { slug: 'wifi', name: 'Wi-Fi', category: 'essentials', isEssential: true },
   { slug: 'secure-parking', name: 'Secure parking', category: 'essentials', isEssential: true },
   { slug: 'backup-power', name: 'Backup power', category: 'essentials', isEssential: true },
@@ -88,7 +133,8 @@ export const PROVIDERS: ProviderSeed[] = [
     slug: 'tidewater-travel',
     name: 'Tidewater Travel',
     kind: 'ota',
-    description: 'Fictional international agency that quotes prices excluding VAT (demonstration only).',
+    description:
+      'Fictional international agency that quotes prices excluding VAT (demonstration only).',
     priceFactor: 0.9,
     pricesIncludeTax: false,
     serviceFeeRate: 0,

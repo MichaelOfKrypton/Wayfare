@@ -26,7 +26,7 @@
     "db:seed": "npm run db:seed -w @wayfare/api",
     "db:reset": "npm run db:reset -w @wayfare/api",
     "test": "npm run test:unit && npm run test:integration",
-    "test:unit": "vitest run --project unit",
+    "test:unit": "vitest run --project unit --project unit-web",
     "test:integration": "vitest run --project integration",
     "test:e2e": "playwright test",
     "images": "node apps/web/scripts/generate-demo-images.mjs"
