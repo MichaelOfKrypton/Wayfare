@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "../../node_modules/.tsbuild/api",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["src", "seed", "test"],
+  "references": [{ "path": "../../packages/shared" }]
+}

@@ -1,0 +1,51 @@
+{
+  "name": "wayfare",
+  "version": "0.1.0",
+  "private": true,
+  "description": "South African accommodation discovery and price-comparison demo (synthetic data, local-first).",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,magenta \"npm run dev -w @wayfare/api\" \"npm run dev -w @wayfare/web\"",
+    "build": "npm run typecheck && npm run build -w @wayfare/web",
+    "start": "concurrently -k -n api,web -c blue,magenta \"npm run start -w @wayfare/api\" \"npm run preview -w @wayfare/web\"",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "npm run db:migrate -w @wayfare/api",
+    "db:seed": "npm run db:seed -w @wayfare/api",
+    "db:reset": "npm run db:reset -w @wayfare/api",
+    "test": "npm run test:unit && npm run test:integration",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:e2e": "playwright test",
+    "images": "node apps/web/scripts/generate-demo-images.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.0.5",
+    "concurrently": "^10.0.6",
+    "eslint": "^10.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vitest": "^5.0.5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

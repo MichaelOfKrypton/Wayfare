@@ -1,0 +1,24 @@
+# Local PostgreSQL 17 + PostGIS 3.5 for Wayfare.
+# Credentials are non-secret local development defaults; the port binds to localhost only.
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: wayfare-db
+    environment:
+      POSTGRES_USER: wayfare
+      POSTGRES_PASSWORD: wayfare_dev
+      POSTGRES_DB: wayfare
+    ports:
+      - '127.0.0.1:54329:5432'
+    volumes:
+      - wayfare-pgdata:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U wayfare -d wayfare']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+volumes:
+  wayfare-pgdata:

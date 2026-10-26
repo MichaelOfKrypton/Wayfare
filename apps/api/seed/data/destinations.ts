@@ -1,0 +1,83 @@
+import type { DestinationKind, Province } from '@wayfare/shared';
+
+export interface DestinationSeed {
+  slug: string;
+  name: string;
+  kind: DestinationKind;
+  province: Province;
+  parent?: string;
+  lat: number;
+  lng: number;
+  radiusKm: number;
+  featured?: boolean;
+  summary?: string;
+  /** Illustration theme for the destination card (see generate-demo-images.mjs). */
+  theme?: string;
+}
+
+/**
+ * Places a user can search for. Coordinates are approximate public geographic
+ * locations of towns, suburbs and landmarks.
+ */
+export const DESTINATIONS: DestinationSeed[] = [
+  // --- Cities and towns (featured on the homepage) ---
+  { slug: 'cape-town', name: 'Cape Town', kind: 'city', province: 'Western Cape', lat: -33.9249, lng: 18.4241, radiusKm: 20, featured: true, theme: 'coast',
+    summary: 'Mountain, ocean and a lively city bowl, from Atlantic seaboard apartments to leafy Constantia.' },
+  { slug: 'johannesburg', name: 'Johannesburg', kind: 'city', province: 'Gauteng', lat: -26.2041, lng: 28.0473, radiusKm: 25, featured: true, theme: 'city',
+    summary: 'Business hotels in Sandton, creative stays in Maboneng and Melville, quick access to OR Tambo.' },
+  { slug: 'durban', name: 'Durban', kind: 'city', province: 'KwaZulu-Natal', lat: -29.8587, lng: 31.0218, radiusKm: 20, featured: true, theme: 'coast',
+    summary: 'Warm Indian Ocean beaches, the Golden Mile and Umhlanga holiday apartments.' },
+  { slug: 'stellenbosch', name: 'Stellenbosch', kind: 'town', province: 'Western Cape', lat: -33.9321, lng: 18.8602, radiusKm: 10, featured: true, theme: 'winelands',
+    summary: 'Oak-lined streets, wine farms and guesthouses close to the university town centre.' },
+  { slug: 'knysna', name: 'Knysna', kind: 'town', province: 'Western Cape', lat: -34.0363, lng: 23.0471, radiusKm: 15, featured: true, theme: 'forest',
+    summary: 'Lagoon views, forest lodges and Garden Route self-catering.' },
+  { slug: 'hermanus', name: 'Hermanus', kind: 'town', province: 'Western Cape', lat: -34.4187, lng: 19.2345, radiusKm: 10, featured: true, theme: 'coast',
+    summary: 'Cliff-path walks and seasonal whale watching, with B&Bs close to the old harbour.' },
+  { slug: 'clarens', name: 'Clarens', kind: 'town', province: 'Free State', lat: -28.5126, lng: 28.4224, radiusKm: 10, featured: true, theme: 'mountain',
+    summary: 'A sandstone village beneath the Maluti mountains, with cosy cottages and farm stays.' },
+  { slug: 'hazyview', name: 'Hazyview', kind: 'town', province: 'Mpumalanga', lat: -25.0441, lng: 31.1259, radiusKm: 25, featured: true, theme: 'bushveld',
+    summary: 'A gateway to the southern Kruger, with bush lodges and family chalets.' },
+  { slug: 'paarl', name: 'Paarl', kind: 'town', province: 'Western Cape', lat: -33.7342, lng: 18.9621, radiusKm: 10, theme: 'winelands',
+    summary: 'Granite domes, vineyards and good-value winelands accommodation.' },
+  { slug: 'franschhoek', name: 'Franschhoek', kind: 'town', province: 'Western Cape', lat: -33.9133, lng: 19.1169, radiusKm: 8, theme: 'winelands',
+    summary: 'A valley known for food and wine, from boutique hotels to vineyard cottages.' },
+  { slug: 'george', name: 'George', kind: 'town', province: 'Western Cape', lat: -33.963, lng: 22.4617, radiusKm: 15, theme: 'forest',
+    summary: 'A Garden Route hub beneath the Outeniqua mountains, close to the airport.' },
+  { slug: 'plettenberg-bay', name: 'Plettenberg Bay', kind: 'town', province: 'Western Cape', lat: -34.0527, lng: 23.3716, radiusKm: 12, theme: 'coast',
+    summary: 'Long beaches and holiday homes on the eastern Garden Route.' },
+  { slug: 'pretoria', name: 'Pretoria', kind: 'city', province: 'Gauteng', lat: -25.7479, lng: 28.2293, radiusKm: 20, theme: 'city',
+    summary: 'Jacaranda-lined streets, embassies and university suburbs.' },
+  { slug: 'gqeberha', name: 'Gqeberha', kind: 'city', province: 'Eastern Cape', lat: -33.9608, lng: 25.6022, radiusKm: 18, theme: 'coast',
+    summary: 'Friendly beaches at Summerstrand and a base for Addo excursions.' },
+  { slug: 'central-drakensberg', name: 'Central Drakensberg', kind: 'region', province: 'KwaZulu-Natal', lat: -28.97, lng: 29.43, radiusKm: 30, theme: 'mountain',
+    summary: 'Hiking country beneath the escarpment, with mountain lodges and self-catering cabins.' },
+
+  // --- Suburbs ---
+  { slug: 'sea-point', name: 'Sea Point', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -33.9205, lng: 18.3905, radiusKm: 3 },
+  { slug: 'camps-bay', name: 'Camps Bay', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -33.953, lng: 18.385, radiusKm: 3 },
+  { slug: 'green-point', name: 'Green Point', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -33.911, lng: 18.408, radiusKm: 2.5 },
+  { slug: 'gardens', name: 'Gardens', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -33.934, lng: 18.413, radiusKm: 3 },
+  { slug: 'woodstock', name: 'Woodstock', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -33.93, lng: 18.447, radiusKm: 3 },
+  { slug: 'constantia', name: 'Constantia', kind: 'suburb', province: 'Western Cape', parent: 'cape-town', lat: -34.025, lng: 18.445, radiusKm: 5 },
+  { slug: 'sandton', name: 'Sandton', kind: 'suburb', province: 'Gauteng', parent: 'johannesburg', lat: -26.1076, lng: 28.0567, radiusKm: 5 },
+  { slug: 'rosebank', name: 'Rosebank', kind: 'suburb', province: 'Gauteng', parent: 'johannesburg', lat: -26.1458, lng: 28.042, radiusKm: 3 },
+  { slug: 'melville', name: 'Melville', kind: 'suburb', province: 'Gauteng', parent: 'johannesburg', lat: -26.175, lng: 28.008, radiusKm: 3 },
+  { slug: 'maboneng', name: 'Maboneng', kind: 'suburb', province: 'Gauteng', parent: 'johannesburg', lat: -26.2045, lng: 28.059, radiusKm: 2 },
+  { slug: 'umhlanga', name: 'Umhlanga', kind: 'suburb', province: 'KwaZulu-Natal', parent: 'durban', lat: -29.724, lng: 31.076, radiusKm: 5 },
+  { slug: 'durban-beachfront', name: 'Durban Beachfront', kind: 'suburb', province: 'KwaZulu-Natal', parent: 'durban', lat: -29.852, lng: 31.025, radiusKm: 3 },
+  { slug: 'berea', name: 'Berea', kind: 'suburb', province: 'KwaZulu-Natal', parent: 'durban', lat: -29.838, lng: 31.005, radiusKm: 4 },
+  { slug: 'hatfield', name: 'Hatfield', kind: 'suburb', province: 'Gauteng', parent: 'pretoria', lat: -25.7487, lng: 28.238, radiusKm: 3 },
+  { slug: 'summerstrand', name: 'Summerstrand', kind: 'suburb', province: 'Eastern Cape', parent: 'gqeberha', lat: -33.996, lng: 25.656, radiusKm: 3 },
+
+  // --- Landmarks ---
+  { slug: 'va-waterfront', name: 'V&A Waterfront', kind: 'landmark', province: 'Western Cape', parent: 'cape-town', lat: -33.9036, lng: 18.4207, radiusKm: 4 },
+  { slug: 'table-mountain-cableway', name: 'Table Mountain Aerial Cableway', kind: 'landmark', province: 'Western Cape', parent: 'cape-town', lat: -33.9486, lng: 18.4031, radiusKm: 5 },
+  { slug: 'kirstenbosch', name: 'Kirstenbosch National Botanical Garden', kind: 'landmark', province: 'Western Cape', parent: 'cape-town', lat: -33.9875, lng: 18.4327, radiusKm: 5 },
+  { slug: 'cape-town-international-airport', name: 'Cape Town International Airport', kind: 'landmark', province: 'Western Cape', parent: 'cape-town', lat: -33.9715, lng: 18.6021, radiusKm: 15 },
+  { slug: 'or-tambo-international-airport', name: 'O.R. Tambo International Airport', kind: 'landmark', province: 'Gauteng', parent: 'johannesburg', lat: -26.1392, lng: 28.246, radiusKm: 20 },
+  { slug: 'king-shaka-international-airport', name: 'King Shaka International Airport', kind: 'landmark', province: 'KwaZulu-Natal', parent: 'durban', lat: -29.6144, lng: 31.1197, radiusKm: 20 },
+  { slug: 'ushaka-marine-world', name: 'uShaka Marine World', kind: 'landmark', province: 'KwaZulu-Natal', parent: 'durban', lat: -29.8677, lng: 31.0455, radiusKm: 5 },
+  { slug: 'union-buildings', name: 'Union Buildings', kind: 'landmark', province: 'Gauteng', parent: 'pretoria', lat: -25.74, lng: 28.212, radiusKm: 6 },
+  { slug: 'knysna-heads', name: 'Knysna Heads', kind: 'landmark', province: 'Western Cape', parent: 'knysna', lat: -34.079, lng: 23.06, radiusKm: 6 },
+  { slug: 'kruger-phabeni-gate', name: 'Phabeni Gate, Kruger National Park', kind: 'landmark', province: 'Mpumalanga', parent: 'hazyview', lat: -25.023, lng: 31.24, radiusKm: 20 },
+];
