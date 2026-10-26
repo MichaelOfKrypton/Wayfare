@@ -1,0 +1,25 @@
+{
+  // Press F5 to start the database, API and web app, then open the app in a browser.
+  // Close that browser window (or press Shift+F5) to stop the servers again.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Wayfare: run app (Chrome)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web",
+      "preLaunchTask": "Wayfare: wait until ready",
+      "postDebugTask": "Wayfare: stop servers"
+    },
+    {
+      "name": "Wayfare: run app (Edge)",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/web",
+      "preLaunchTask": "Wayfare: wait until ready",
+      "postDebugTask": "Wayfare: stop servers"
+    }
+  ]
+}

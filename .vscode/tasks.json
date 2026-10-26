@@ -1,0 +1,56 @@
+{
+  // Used by .vscode/launch.json (F5). Also available via "Terminal → Run Task…".
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Wayfare: prepare",
+      "detail": "Start Docker/PostGIS, migrate, seed if empty, free stale ports",
+      "type": "shell",
+      "command": "node scripts/dev-prepare.mjs",
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    },
+    {
+      "label": "Wayfare: dev servers",
+      "detail": "API on :4000 and web app on :5173 (npm run dev)",
+      "type": "shell",
+      "command": "npm run dev",
+      "dependsOn": "Wayfare: prepare",
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "owner": "wayfare",
+        "pattern": { "regexp": "^__wayfare_never_matches__$" },
+        "background": {
+          "activeBegins": true,
+          "beginsPattern": "wayfare@\\S+ dev",
+          "endsPattern": "(Local:|Server listening)"
+        }
+      }
+    },
+    {
+      "label": "Wayfare: wait until ready",
+      "detail": "Poll the API and web app until both respond",
+      "type": "shell",
+      "command": "node scripts/wait-for-app.mjs",
+      "dependsOn": "Wayfare: dev servers",
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Wayfare: stop servers",
+      "detail": "Stops the dev servers when the debug browser is closed",
+      "type": "process",
+      "command": "${input:terminateAllTasks}",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "terminateAllTasks",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "terminateAll"
+    }
+  ]
+}

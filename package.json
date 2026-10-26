@@ -13,6 +13,7 @@
     "apps/*"
   ],
   "scripts": {
+    "dev:prepare": "node scripts/dev-prepare.mjs",
     "dev": "concurrently -k -n api,web -c blue,magenta \"npm run dev -w @wayfare/api\" \"npm run dev -w @wayfare/web\"",
     "build": "npm run typecheck && npm run build -w @wayfare/web",
     "start": "concurrently -k -n api,web -c blue,magenta \"npm run start -w @wayfare/api\" \"npm run preview -w @wayfare/web\"",

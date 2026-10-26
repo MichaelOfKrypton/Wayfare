@@ -106,6 +106,20 @@ Open <http://localhost:5173>.
 - **No API keys are needed.** See [`REQUIRED APIS.md`](REQUIRED%20APIS.md) for every configuration item and external service.
 - **Offline use:** once dependencies are installed, everything except the map background tiles works without internet.
 
+### One-key start in Cursor / VS Code (F5)
+
+Open the folder and press **F5**, choosing **"Wayfare: run app (Chrome)"** or the Edge variant. The editor then:
+
+1. Runs `scripts/dev-prepare.mjs`, which:
+   - creates `.env` if it's missing
+   - starts Docker Desktop if needed and starts the database container
+   - migrates the schema, and seeds the data if the database is empty
+   - stops any leftover Wayfare dev servers on ports 4000 and 5173
+2. Starts the API and web app (`npm run dev`) in a terminal panel.
+3. Waits until both respond, then opens <http://localhost:5173> in a browser tab with the debugger attached.
+
+Close that browser window, or press **Shift+F5**, to stop the servers. Run `npm install` once before the first F5.
+
 ### Useful commands
 
 | Command                                  | What it does                                                                           |
