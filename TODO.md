@@ -1,11 +1,11 @@
 # TODO — Wayfare master checklist
 
-Legend: `[x]` done **and verified** · `[ ]` open · `[~]` in progress · `⛔` blocked · `⏸` deferred.
-A box is ticked only after the stated verification has been run.
+Legend: `[x]` done **and verified** · `[ ]` open · `⏸` deferred (optional / future).
+A box is ticked only after the stated verification has been run. Last updated: 2026-10-26.
 
 ## 1. Planning
 
-- [x] Phase 0 repository inspection (remote: `MichaelOfKrypton/Wayfare`; README only; Node 24.18, npm 11.16, Docker 29.5, no native PostgreSQL)
+- [x] Phase 0 repository inspection. Remote: `MichaelOfKrypton/Wayfare` (README only). Tools: Node 24.18, npm 11.16, Docker 29.5, no native PostgreSQL
 - [x] Product requirements (`docs/PRODUCT_REQUIREMENTS.md`)
 - [x] Risk register (`docs/RISK_REGISTER.md`)
 - [x] External services researched and registered (`REQUIRED APIS.md`)
@@ -16,102 +16,104 @@ A box is ticked only after the stated verification has been run.
 - [x] Database design + Mermaid ERD (`docs/DATABASE_DESIGN.md`)
 - [x] API specification (`docs/API_SPECIFICATION.md`)
 - [x] ADRs (`docs/TECHNICAL_DECISIONS.md`)
-- [ ] Monorepo scaffold: workspaces, TypeScript strict, ESLint, Prettier, root scripts — _verify: `npm run typecheck && npm run lint` pass_
+- [x] Monorepo scaffold: workspaces, TypeScript strict, ESLint, Prettier, root scripts. _Verified: `npm run typecheck`, `npm run lint` and `npm run format:check` pass_
 
 ## 3. Design system
 
 - [x] Design system document (`docs/DESIGN_SYSTEM.md`)
-- [ ] `tokens.css` + global styles implemented
-- [ ] Core primitives: Button, IconButton, Field inputs, Chip, Badge, RatingPill, Price, Dialog, Skeleton, Empty/Error states
-- [ ] Generated demo illustrations (SVG) committed
+- [x] `tokens.css` + global styles
+- [x] Primitives: Button, Badge, RatingPill, Dialog, Skeleton, Empty/Error states. _Field inputs are styled in feature modules; there are no separate Field/Chip components (YAGNI)_
+- [x] Generated demo illustrations: 53 SVGs, reviewed visually
 
 ## 4. Frontend
 
-- [ ] App shell: header, footer, demo notice, routing, 404
-- [ ] Homepage: hero search, "Tonight near me", featured destinations, how-it-works teaser
-- [ ] Destination combobox with keyboard support (ARIA combobox)
-- [ ] Search results page: summary bar, sort, filter sidebar/drawer, cards, pagination
-- [ ] Property page: gallery, facts, amenities, rooms, map, offers, provenance
-- [ ] How-it-works / data disclosure page
-- [ ] Loading / empty / error states on every data view
-- [ ] Mobile layouts (360 px) for all pages — _verify with Playwright mobile project_
+- [x] App shell: header, footer, persistent demo notice, routing, 404, skip link
+- [x] Homepage: hero search, "Tonight near me", featured destinations, value section
+- [x] Destination combobox with keyboard support. _Verified by E2E keyboard test_
+- [x] Search results page: summary, sort, filter sidebar/drawer, cards, pagination
+- [x] Property page: gallery, facts, amenities, rooms, map, offers, provenance
+- [x] How-it-works / data disclosure page
+- [x] Loading, empty and error states on every data view
+- [x] Mobile layouts. _Verified: Playwright Pixel 7 project, no horizontal overflow_
 
 ## 5. Backend
 
-- [ ] Config (Zod env), Fastify app factory, logging, helmet, CORS, rate limit
-- [ ] Error envelope + handler (validation, not found, 503, 500 generic)
-- [ ] `GET /api/health`, `/api/health/ready`
-- [ ] `GET /api/destinations`, `/api/destinations/:slug`
-- [ ] `GET /api/filters`
-- [ ] `GET /api/search`
-- [ ] `GET /api/properties/:slug`, `/api/properties/:slug/offers`
+- [x] Config (Zod env), Fastify app factory, logging, helmet, CORS, rate limit
+- [x] Error envelope + handler (400/404/429/503/500 generic)
+- [x] `GET /api/health`, `/api/health/ready`
+- [x] `GET /api/destinations`, `/api/destinations/:slug`
+- [x] `GET /api/filters`
+- [x] `GET /api/search`
+- [x] `GET /api/properties/:slug`, `/api/properties/:slug/offers`
 
 ## 6. Database
 
-- [ ] `docker-compose.yml` with PostGIS 17-3.5 and test DB init — _verify: `docker compose up -d` healthy_
-- [ ] Migration runner + `schema_migrations`
-- [ ] Schema migration (tables, constraints, indexes, triggers)
-- [ ] `quote_stay` SQL function
-- [ ] Deterministic seed (~15 destinations, ~90 properties, 5 providers) — _verify: re-running produces identical row checksums_
-- [ ] Seed validator (bounding box, radius, 30 m duplicate check)
+- [x] `docker-compose.yml` (PostGIS 17-3.5) + test DB init. _Verified: container healthy, both DBs present_
+- [x] Migration runner + `schema_migrations` (advisory lock, per-file transactions)
+- [x] Schema: constraints, composite FKs, exclusion constraint, indexes, triggers
+- [x] `quote_stay` SQL function
+- [x] Deterministic seed: 40 destinations, 91 properties, 5 providers, 602 offers. _Verified by unit test (same input gives equal output)_
+- [x] Seed validator: bounding box, destination radius, 30 m duplicate check, referential checks
 
 ## 7. Search and filtering
 
-- [ ] Destination and coordinate reference resolution
-- [ ] Filters: price range, types, amenities (all-of), min score, free cancellation, bedrooms, guests, radius, availability
-- [ ] Sorting: recommended, price asc/desc, score, distance; stable tie-breaks
-- [ ] Count reflects the filtered set; pagination
-- [ ] Validation of dates (SAST today), guests, ranges, unknown slugs
+- [x] Destination and coordinate reference resolution
+- [x] Filters: price, types, amenities (all-of), score, free cancellation, bedrooms, guests, radius, availability, name
+- [x] Sorting: recommended, price asc/desc, score, distance, with stable tie-breaks
+- [x] Count reflects the filtered set; pagination. _Verified against an independent SQL oracle_
+- [x] Validation of dates (SAST today), guests, ranges, unknown parameters and slugs
 
 ## 8. Geospatial functionality
 
-- [ ] Leaflet map with price markers + clustering
-- [ ] Marker ↔ card selection/highlight sync
-- [ ] Tile error handling + attribution
-- [ ] "Use my location" with permission handling and fallback
-- [ ] Property page location map
+- [x] Leaflet map with price markers + clustering
+- [x] Marker ↔ card selection/highlight sync. _Verified by E2E_
+- [x] Tile error handling + attribution. _Verified by E2E with tiles blocked_
+- [x] "Use my location" with permission handling and fallback messages
+- [ ] Geolocation tested manually in a real browser with a real permission prompt. _Not automated; needs a person to grant permission_
+- [x] Property page location map
 
 ## 9. Price comparison
 
-- [ ] Shared `calculateStayPrice` reference implementation
-- [ ] Offers endpoint grouped by room type with badges + recommendation reason
-- [ ] Unavailable rooms listed with reasons
-- [ ] UI: breakdown (subtotal, fees, VAT included/added, total, avg/night), simulated label, last-checked time
-- [ ] Provider action dialog (no booking flow)
+- [x] Shared `calculateStayPrice` reference implementation. _Verified by unit tests + SQL parity over 3,000+ stays_
+- [x] Offers endpoint grouped by room type with badges + recommendation reason
+- [x] Unavailable rooms listed with reasons
+- [x] UI breakdown: subtotal, fees, VAT included/added, total, avg/night, simulated label, generated time
+- [x] Provider action dialog (no booking flow)
 
 ## 10. Testing
 
-- [ ] Unit: pricing, dates/clock, geo, format, schema validation, SQL builder, ranking
-- [ ] Unit (web): URL-state mapping, key components
-- [ ] Integration: every endpoint, combined filters, pagination, sorting, errors, SQL↔TS price parity
-- [ ] E2E (Playwright): search flow, filters, sort, map↔card, property + offers, mobile, invalid input
-- [ ] Production build passes
+- [x] Unit: 62 tests (shared, API helpers, recommendation, seed)
+- [x] Web unit: 19 tests (URL state, pagination, offer comparison)
+- [x] Integration: 56 tests against real PostgreSQL
+- [x] E2E: 19 Playwright tests (desktop, mobile, accessibility, keyboard)
+- [x] Production build passes
 
 ## 11. Security
 
-- [ ] Strict query validation (unknown keys rejected)
-- [ ] Parameterised SQL review (no string-interpolated values)
-- [ ] Generic 500s; no stack traces to client
-- [ ] Helmet headers, CORS restricted, rate limit, result caps
-- [ ] `npm audit` reviewed
-- [ ] `.env` untracked; `git ls-files` secret check
+- [x] Strict query validation (unknown keys rejected)
+- [x] Parameterised SQL review; `LIKE` escaping unit-tested
+- [x] Generic 500s; no stack traces to the client
+- [x] Helmet headers, restricted CORS, rate limit, result caps
+- [x] `npm audit`: 0 vulnerabilities
+- [x] `.env` untracked (`git ls-files` shows only `.env.example`)
 
 ## 12. Performance
 
-- [ ] `EXPLAIN ANALYZE` of search recorded (`docs/PERFORMANCE.md`)
-- [ ] Map marker diffing (no re-creation on hover)
-- [ ] Bundle size reviewed; Leaflet lazy-loaded with the map
+- [x] `EXPLAIN ANALYZE` of search recorded (`docs/PERFORMANCE.md`): p95 under 10 ms locally
+- [x] Map marker diffing (only changed markers are updated)
+- [x] Bundle reviewed; Leaflet lazy-loaded with the map
 
 ## 13. Documentation
 
-- [ ] README: overview, features, screenshots, stack, setup, run, test, limitations, licensing
-- [ ] Docs synchronised with implementation (final pass)
+- [x] README: overview, features, screenshots, stack, setup, run, test, limitations, licensing
+- [x] Docs synchronised with the implementation (API spec 400/404 rule corrected; performance/security report added)
 
 ## 14. GitHub preparation
 
-- [ ] Screenshots captured from the running app
-- [ ] Clean commit history in logical phases
-- [ ] Final audit from a fresh clone (Phase 14)
+- [x] Screenshots captured from the running app (`docs/screenshots/`)
+- [x] Commit history in logical phases
+- [x] Final audit from a fresh clone (Phase 14). _See the final report_
+- [ ] Push to GitHub. _Awaiting the owner's go-ahead_
 
 ## 15. Optional future improvements ⏸
 
@@ -120,7 +122,8 @@ A box is ticked only after the stated verification has been run.
 - ⏸ Provider adapter for an authorised affiliate feed
 - ⏸ Price history / freshness decay
 - ⏸ CI workflow (GitHub Actions with a PostGIS service container)
+- ⏸ Route-level code splitting (low value at the current bundle size)
 
 ## Blockers
 
-- None currently.
+- None. The two open items need the owner: a manual geolocation check, and approval to push.

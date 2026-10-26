@@ -97,12 +97,12 @@ None of these is used. **No scraping of any provider is permitted.** Real photos
 
 ## E. Checklist
 
-- [ ] Local database configured (`docker compose up -d`)
-- [ ] Database schema applied (`npm run db:migrate`)
-- [ ] Demonstration dataset seeded (`npm run db:seed`)
-- [ ] Map works with the chosen tile source (OSM standard)
+- [x] Local database configured (`docker compose up -d`). Verified: PostgreSQL 17.5, PostGIS 3.5.2, `wayfare` + `wayfare_test`
+- [x] Database schema applied (`npm run db:migrate`)
+- [x] Demonstration dataset seeded (`npm run db:seed`): 91 properties, 602 offers
+- [x] Map works with the chosen tile source (OSM standard). Verified in screenshots; E2E blocks tiles to check the offline notice
 - [x] External map-service limitations documented (§B)
-- [ ] Optional geolocation tested (manual check on `localhost`)
+- [ ] Optional geolocation tested (manual check on `localhost`). Error handling is implemented; a real permission prompt still needs a person to test it
 - [x] No paid credentials required for core functionality
-- [ ] No secrets committed (verified with `git ls-files`)
+- [x] No secrets committed (verified with `git ls-files`, 2026-10-26)
 - [x] Future provider integrations documented (§C)

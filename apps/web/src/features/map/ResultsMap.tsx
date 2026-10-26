@@ -64,12 +64,15 @@ export default function ResultsMap({
       showCoverageOnHover: false,
       maxClusterRadius: 45,
       spiderfyOnMaxZoom: true,
-      iconCreateFunction: (c) =>
-        L.divIcon({
+      iconCreateFunction: (c) => {
+        // Leaflet copies `title` onto the (keyboard-focusable) cluster element: its accessible name.
+        c.options.title = `${c.getChildCount()} stays in this area. Select to zoom in.`;
+        return L.divIcon({
           className: 'marker-cluster-custom',
           html: `<span aria-hidden="true">${c.getChildCount()}</span>`,
           iconSize: [40, 40],
-        }),
+        });
+      },
     });
     map.addLayer(cluster);
     referenceLayerRef.current = L.layerGroup().addTo(map);

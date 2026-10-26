@@ -38,13 +38,13 @@ Unknown query parameters are rejected (400). This catches typos like `maxPrise`.
 }
 ```
 
-| HTTP | `code`                | When                                                                                                                   |
-| ---- | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 400  | `VALIDATION_ERROR`    | Malformed or out-of-range parameters, or a business-rule violation (past dates, distance sort with no reference point) |
-| 404  | `NOT_FOUND`           | Unknown property or destination slug, or unknown route                                                                 |
-| 429  | `RATE_LIMITED`        | Rate limit exceeded                                                                                                    |
-| 503  | `SERVICE_UNAVAILABLE` | Database unreachable                                                                                                   |
-| 500  | `INTERNAL_ERROR`      | Unexpected. The message is generic; details are server-log only                                                        |
+| HTTP | `code`                | When                                                                                                                                                                         |
+| ---- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400  | `VALIDATION_ERROR`    | Malformed or out-of-range parameters, or a business-rule violation (past dates, distance sort with no reference point)                                                       |
+| 404  | `NOT_FOUND`           | Unknown resource in the **path** (`/properties/:slug`, `/destinations/:slug`) or unknown route. Unknown slugs in **query parameters** (e.g. `destination`, `types`) are 400s |
+| 429  | `RATE_LIMITED`        | Rate limit exceeded                                                                                                                                                          |
+| 503  | `SERVICE_UNAVAILABLE` | Database unreachable                                                                                                                                                         |
+| 500  | `INTERNAL_ERROR`      | Unexpected. The message is generic; details are server-log only                                                                                                              |
 
 ## 3. Endpoints
 

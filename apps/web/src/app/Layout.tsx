@@ -1,5 +1,5 @@
 import { FlaskConical } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import styles from './Layout.module.css';
 
@@ -7,8 +7,13 @@ export function Layout() {
   const location = useLocation();
   const isSearch = location.pathname === '/search';
 
-  // Move focus to the main landmark on navigation so screen-reader users hear the new page.
+  // Move focus to the main landmark on client-side navigation so screen-reader users hear
+  // the new page. Skipped on first load so the skip link stays the first Tab stop.
+  // (Comparing paths, not a "first render" flag, keeps this correct under StrictMode.)
+  const previousPath = useRef(location.pathname);
   useEffect(() => {
+    if (previousPath.current === location.pathname) return;
+    previousPath.current = location.pathname;
     document.getElementById('main')?.focus({ preventScroll: true });
   }, [location.pathname]);
 
