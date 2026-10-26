@@ -229,6 +229,42 @@ Property details (no prices). Returns 404 if the slug is unknown.
 - `credit`/`creditUrl` are set for third-party photos and `null` for Wayfare's own illustrations.
 - Search results' `coverImage` and destinations' `imageCredit` (`{ "text", "url" } | null`) follow the same rule.
 
+### `GET /api/properties/:slug/calendar`
+
+Price calendar: every check-in date of a month, each priced for a stay of `nights` nights. Query: `month` (`YYYY-MM`), `nights` (1–14), `guests` (1–16), all required.
+
+```json
+{
+  "month": "2026-11",
+  "nights": 2,
+  "guests": 2,
+  "currency": "ZAR",
+  "cheapestTotalCents": 268000,
+  "days": [
+    {
+      "date": "2026-11-01",
+      "totalCents": 268000,
+      "averageNightlyCents": 134000,
+      "offerCount": 7,
+      "unavailableReason": null,
+      "isCheapest": true
+    },
+    {
+      "date": "2026-11-02",
+      "totalCents": null,
+      "averageNightlyCents": null,
+      "offerCount": 0,
+      "unavailableReason": "sold_out",
+      "isCheapest": false
+    }
+  ]
+}
+```
+
+- **Consistency:** one SQL statement prices all dates with the same `quote_stay` function and eligibility rules as `/offers`. An integration test checks that every date's total equals the cheapest offer `/offers` returns for that stay, and that `sold_out` matches zero eligible offers.
+- **`unavailableReason`:** `past` (before today), `too_far_ahead` (beyond 365 days) or `sold_out` (nothing fits the group, minimum stay or availability).
+- **Errors:** a malformed month or out-of-range values give 400; a month entirely outside today…+365 days gives 400; an unknown slug gives 404.
+
 ### `GET /api/properties/:slug/offers`
 
 The offer comparison for a stay.

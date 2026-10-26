@@ -164,3 +164,19 @@
   max-width: 52ch;
   font-size: var(--text-sm);
 }
+
+/* Saved-places count; re-keyed on change so it pops when the number moves. */
+.count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: var(--space-2);
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-on-dark);
+  color: var(--color-gray-900);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  animation: pop 320ms var(--ease-smooth) backwards;
+}

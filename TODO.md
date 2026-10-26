@@ -117,11 +117,9 @@ A box is ticked only after the stated verification has been run. Last updated: 2
 
 ## 15. Optional future improvements ⏸
 
-- ⏸ Saved properties (localStorage)
 - ⏸ "Search this area" on map pan
 - ⏸ Provider adapter for an authorised affiliate feed
 - ⏸ Price history / freshness decay
-- ⏸ CI workflow (GitHub Actions with a PostGIS service container)
 - ⏸ Route-level code splitting (low value at the current bundle size)
 
 ## 16. Real places, scale and hardening (Phase 15)
@@ -140,6 +138,15 @@ A box is ticked only after the stated verification has been run. Last updated: 2
 - [x] README screenshots retaken with real data and the compass logo
 - [x] Web app security headers (CSP without inline scripts, Permissions-Policy, COOP)
 - [x] `npm audit --omit=dev`: 0 vulnerabilities
+
+## 17. CI, price calendar, saved places (Phase 16)
+
+- [x] GitHub Actions: format, lint, types, build, unit; integration + E2E against a PostGIS service container
+- [x] Price calendar API (`/properties/:slug/calendar`), one SQL statement; integration-tested against `/offers` for every date of a month
+- [x] Price calendar UI: month grid, stay length, cheapest/good-value bands, choose a date to re-price offers
+- [x] Saved places in localStorage (validated, capped, cross-tab sync, survives storage failures), unit-tested
+- [x] Saved page: compare up to 3 side by side (price for your dates, score, cancellation, amenities, website), "only differences" toggle
+- [x] E2E for calendar and saved/compare; axe clean on the new pages with real data
 
 ## Blockers
 

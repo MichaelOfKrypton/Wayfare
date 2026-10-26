@@ -157,6 +157,17 @@ export type SearchQuery = z.output<typeof searchQuerySchema>;
 export const offersQuerySchema = z.strictObject(stayQueryShape).superRefine(refineStay);
 export type OffersQuery = z.output<typeof offersQuerySchema>;
 
+/** Longest stay the price calendar prices per check-in date. */
+export const CALENDAR_MAX_NIGHTS = 14;
+
+/** Price calendar: one month of check-in dates, each priced for `nights` nights. */
+export const calendarQuerySchema = z.strictObject({
+  month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, { error: 'Use YYYY-MM.' }),
+  nights: numberParam({ min: 1, max: CALENDAR_MAX_NIGHTS, integer: true }),
+  guests: numberParam({ min: 1, max: 16, integer: true }),
+});
+export type CalendarQuery = z.output<typeof calendarQuerySchema>;
+
 export const destinationsQuerySchema = z.strictObject({
   q: z.string().trim().min(1).max(80).optional(),
   featured: z

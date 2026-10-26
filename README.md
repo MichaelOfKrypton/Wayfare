@@ -1,5 +1,7 @@
 # Wayfare
 
+[![CI](https://github.com/MichaelOfKrypton/Wayfare/actions/workflows/ci.yml/badge.svg)](https://github.com/MichaelOfKrypton/Wayfare/actions/workflows/ci.yml)
+
 **Find somewhere to stay in South Africa, and see what it really costs.**
 
 Wayfare is a full-stack accommodation search and price-comparison app. Search by place or by your location, filter and sort on a live map, then open a property to compare every provider's offer on the **total price of the stay**: fees and VAT included, with the reason for each recommendation shown.
@@ -25,6 +27,8 @@ Booking sites each show a different headline price. One adds a booking fee, anot
 - **Search:** destination autocomplete, opt-in geolocation, and search state in the URL so links are shareable.
 - **Filters and sorting:** budget (all-in nightly price), type of stay, amenities, score, free cancellation, bedrooms, radius, guests and dates. Sort by recommended, price, score or distance.
 - **Map:** Leaflet with price markers and clustering, kept in sync with the result cards.
+- **Price calendar:** a month of check-in dates, each showing the cheapest all-in price for your stay length. Pick a date and the offers re-price.
+- **Saved places and compare:** heart any stay (kept in your browser, no account), then compare up to 3 side by side: price for your dates, demo score, cancellation and every amenity.
 - **Offer comparison:** room subtotal, fees, VAT, total and per-night price; cancellation and meals; "cheapest" and "recommended" badges with reasons.
 - **Real places:** names, locations, star ratings, websites and phone numbers from OpenStreetMap, with every imported link and field sanitised. Free-licence photos come from Wikimedia Commons, each with its credit.
 - **Built for load:** a response cache with request coalescing, pre-compressed responses, ETags and multi-process mode. In the [load test](docs/PERFORMANCE.md#3-concurrency-and-load) it served about 4,900 requests/s across 1,742 real places with zero errors at 2,000 concurrent connections.
@@ -90,7 +94,7 @@ Prefer not to use Docker? Install PostgreSQL 17 with PostGIS, create `wayfare` a
 ## Roadmap
 
 - Real prices and outbound booking links through an approved affiliate or partner programme. The provider options are compared in [`REQUIRED APIS.md`](REQUIRED%20APIS.md).
-- "Search this area" on the map, saved properties, price alerts and CI.
+- "Search this area" on the map and price alerts.
 
 ## Documentation
 

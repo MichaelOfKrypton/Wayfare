@@ -252,3 +252,30 @@ export interface OffersResponse {
   groups: OfferGroup[];
   unavailable: UnavailableRoom[];
 }
+
+// ---------- Price calendar ----------
+
+/** Why a check-in date has no price. */
+export type CalendarUnavailableReason = 'past' | 'too_far_ahead' | 'sold_out';
+
+export interface CalendarDay {
+  /** Check-in date (YYYY-MM-DD). */
+  date: string;
+  /** Cheapest bookable all-in total for the stay, or null when unavailable. */
+  totalCents: number | null;
+  averageNightlyCents: number | null;
+  /** How many offers can be booked for this check-in date. */
+  offerCount: number;
+  unavailableReason: CalendarUnavailableReason | null;
+  /** True for the cheapest day(s) of the month. */
+  isCheapest: boolean;
+}
+
+export interface CalendarResponse {
+  month: string;
+  nights: number;
+  guests: number;
+  days: CalendarDay[];
+  cheapestTotalCents: number | null;
+  currency: 'ZAR';
+}

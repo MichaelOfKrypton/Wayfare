@@ -169,46 +169,6 @@
   font-size: var(--text-sm);
 }
 
-.stayForm {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-2);
-}
-
-.stayField {
-  display: grid;
-  gap: 2px;
-}
-
-.stayForm label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.stayForm input,
-.stayForm select {
-  min-height: 44px;
-  padding: var(--space-2);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  font-size: var(--text-sm);
-  color: var(--color-text);
-}
-
-.stayForm input[aria-invalid='true'] {
-  border-color: var(--color-danger-700);
-}
-
-.stayError {
-  flex-basis: 100%;
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-danger-700);
-}
-
 .offersLoading {
   display: grid;
   gap: var(--space-3);

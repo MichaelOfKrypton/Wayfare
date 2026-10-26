@@ -1,5 +1,6 @@
 import type {
   ApiErrorBody,
+  CalendarResponse,
   Destination,
   DestinationsResponse,
   FiltersResponse,
@@ -67,6 +68,20 @@ export const api = {
   },
   destination: (slug: string, signal?: AbortSignal) =>
     getJson<Destination>(`/api/destinations/${encodeURIComponent(slug)}`, undefined, signal),
+  calendar: (
+    slug: string,
+    query: { month: string; nights: number; guests: number },
+    signal?: AbortSignal,
+  ) =>
+    getJson<CalendarResponse>(
+      `/api/properties/${encodeURIComponent(slug)}/calendar`,
+      new URLSearchParams({
+        month: query.month,
+        nights: String(query.nights),
+        guests: String(query.guests),
+      }),
+      signal,
+    ),
   property: (slug: string, signal?: AbortSignal) =>
     getJson<PropertyDetail>(`/api/properties/${encodeURIComponent(slug)}`, undefined, signal),
   offers: (

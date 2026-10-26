@@ -66,3 +66,15 @@ export function useOffers(
     placeholderData: keepPreviousData,
   });
 }
+
+export function useCalendar(
+  slug: string,
+  query: { month: string; nights: number; guests: number },
+) {
+  return useQuery({
+    queryKey: ['calendar', slug, query.month, query.nights, query.guests],
+    queryFn: ({ signal }) => api.calendar(slug, query, signal),
+    // Keep the previous month on screen while the next one loads, so the grid never jumps.
+    placeholderData: keepPreviousData,
+  });
+}

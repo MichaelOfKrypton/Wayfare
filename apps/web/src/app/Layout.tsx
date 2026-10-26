@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { useFilters } from '../lib/queries';
+import { useSaved } from '../lib/saved';
 import styles from './Layout.module.css';
 
 export function Layout() {
@@ -10,6 +11,7 @@ export function Layout() {
   // Describe the data that is actually loaded: real OSM places, or the fictional set.
   const realPlaces = (useFilters().data?.dataSummary.realPropertyCount ?? 0) > 0;
   const isSearch = location.pathname === '/search';
+  const savedCount = useSaved().length;
 
   // Move focus to the main landmark on client-side navigation so screen-reader users hear
   // the new page. Skipped on first load so the skip link stays the first Tab stop.
@@ -38,6 +40,19 @@ export function Layout() {
               className={({ isActive }) => (isActive ? styles.active : undefined)}
             >
               Stays
+            </NavLink>
+            <NavLink
+              to="/saved"
+              className={({ isActive }) => (isActive ? styles.active : undefined)}
+            >
+              Saved
+              {savedCount > 0 && (
+                <span key={savedCount} className={styles.count}>
+                  <span className="visually-hidden">(</span>
+                  {savedCount}
+                  <span className="visually-hidden"> places)</span>
+                </span>
+              )}
             </NavLink>
             <NavLink
               to="/how-it-works"

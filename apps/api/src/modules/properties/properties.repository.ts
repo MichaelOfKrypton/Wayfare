@@ -124,3 +124,49 @@ export async function findPropertyIdBySlug(pool: Pool, slug: string): Promise<nu
   ]);
   return rows[0]?.id ?? null;
 }
+
+export interface CalendarRow {
+  date: string;
+  totalCents: number | null;
+  offerCount: number;
+}
+
+/**
+ * Prices every check-in date in [from, to] for a stay of `nights` nights in one
+ * statement: dates × active offers that fit the group and minimum stay, minus
+ * rooms booked over that stay, priced by the same `quote_stay` function as the
+ * offers endpoint. Returns the cheapest total per date (null when nothing fits).
+ */
+export async function findCalendar(
+  pool: Pool,
+  propertyId: number,
+  range: { from: string; to: string; nights: number; guests: number },
+): Promise<CalendarRow[]> {
+  const { rows } = await pool.query<CalendarRow>(
+    `WITH days AS (
+       SELECT d::date AS check_in, (d + make_interval(days => $4))::date AS check_out
+       FROM generate_series($2::date, $3::date, interval '1 day') AS d
+     ),
+     priced AS (
+       SELECT days.check_in, min(q.total_cents) AS total_cents, count(*)::int AS offer_count
+       FROM days
+       JOIN offers o ON o.property_id = $1 AND o.status = 'active' AND o.min_nights <= $4
+       JOIN room_types rt ON rt.id = o.room_type_id AND rt.max_guests >= $5
+       CROSS JOIN LATERAL quote_stay(o.nightly_rate_cents, o.weekend_nightly_rate_cents, o.fee_per_stay_cents,
+                                     o.tax_rate_bps, o.prices_include_tax, days.check_in, days.check_out) q
+       WHERE NOT EXISTS (
+         SELECT 1 FROM room_availability_blocks b
+         WHERE b.room_type_id = o.room_type_id
+           AND b.blocked && daterange(days.check_in, days.check_out, '[)')
+       )
+       GROUP BY days.check_in
+     )
+     SELECT to_char(days.check_in, 'YYYY-MM-DD') AS date,
+            priced.total_cents AS "totalCents",
+            coalesce(priced.offer_count, 0) AS "offerCount"
+     FROM days LEFT JOIN priced USING (check_in)
+     ORDER BY days.check_in`,
+    [propertyId, range.from, range.to, range.nights, range.guests],
+  );
+  return rows;
+}

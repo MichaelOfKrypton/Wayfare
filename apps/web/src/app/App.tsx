@@ -5,6 +5,7 @@ import { HomePage } from '../pages/HomePage';
 import { HowItWorksPage } from '../pages/HowItWorksPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PropertyPage } from '../pages/PropertyPage';
+import { SavedPage } from '../pages/SavedPage';
 import { SearchPage } from '../pages/SearchPage';
 import { Layout } from './Layout';
 
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: '/', element: <HomePage /> },
       { path: '/search', element: <SearchPage /> },
       { path: '/properties/:slug', element: <PropertyPage /> },
+      { path: '/saved', element: <SavedPage /> },
       { path: '/how-it-works', element: <HowItWorksPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],

@@ -12,6 +12,7 @@ import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../../components/Badge';
 import { RatingPill } from '../../components/RatingPill';
+import { SaveButton } from '../../components/SaveButton';
 import styles from './PropertyCard.module.css';
 
 interface Props {
@@ -69,6 +70,7 @@ export const PropertyCard = forwardRef<HTMLElement, Props>(function PropertyCard
           ) : (
             <div className={styles.imagePlaceholder} aria-hidden="true" />
           )}
+          <SaveButton slug={item.slug} name={item.name} />
           <span className={styles.illustration} title={item.coverImage?.credit ?? undefined}>
             {item.coverImage?.credit ? 'Photo' : 'Illustration'}
           </span>

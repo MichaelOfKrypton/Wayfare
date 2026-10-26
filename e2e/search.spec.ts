@@ -53,7 +53,8 @@ test.describe('filters and sorting', () => {
 
   test('type and amenity filters combine', async ({ page }) => {
     await page.goto(searchUrl({ destination: 'cape-town' }));
-    await page.getByLabel('Apartment').check();
+    // The type checkbox, not a heart button whose place name contains "Apartment".
+    await page.getByRole('checkbox', { name: /^Apartment\b/ }).check();
     await page.getByRole('button', { name: 'Wi-Fi', exact: true }).click();
     await expect(page).toHaveURL(/types=apartment/);
     await expect(page).toHaveURL(/amenities=wifi/);
